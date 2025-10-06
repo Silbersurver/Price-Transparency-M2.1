@@ -1,941 +1,925 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Full cost transparency</title>
-  <style>
-    :root{
-      --border:#d0d7de; --bg-parent:#f6f8fa; --text:#24292f;
-      --pink:#ffc0cb; --blue:#8ec5ff; --lblue:#d6ebff; --green:#bff5c8; --green2:#a8e9b3; --orange:#ffd59e;
-      --violet:#e6d8ff; /* neue Farbe für Preu locomoció */
-      --ease-soft:cubic-bezier(.22,.61,.36,1);
-      --ease-verysoft:cubic-bezier(.2,.8,.2,1);
-      --ease-spring:cubic-bezier(.16,1,.3,1);
-      --t-opacity:900ms; --t-geom:1800ms; --t-border:1200ms;
-      --stagger-step:120ms;
-      --card-open:680ms cubic-bezier(.16,1,.3,1);
-      --card-close:560ms cubic-bezier(.2,.8,.2,1);
-      --container-max:1200px; --page-pad:clamp(16px,3vw,28px);
+<!DOCTYPE html> <html lang="de">
+ <head>
+ <meta charset="utf-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1" />
+ <title>Full cost transparency</title>
+ <style>
+ :root{
+ --border:#d0d7de; --bg-parent:#f6f8fa; --text:#24292f;
+ --pink:#ffc0cb; --blue:#8ec5ff; --lblue:#d6ebff; --green:#bff5c8; --green2:#a8e9b3; --orange:#ffd59e;
+ --violet:#e6d8ff; /* neue Farbe für Preu locomoció */
+ --ease-soft:cubic-bezier(.22,.61,.36,1);
+ --ease-verysoft:cubic-bezier(.2,.8,.2,1);
+ --ease-spring:cubic-bezier(.16,1,.3,1);
+ --t-opacity:900ms; --t-geom:1800ms; --t-border:1200ms;
+ --stagger-step:120ms;
+ --card-open:680ms cubic-bezier(.16,1,.3,1);
+ --card-close:560ms cubic-bezier(.2,.8,.2,1);
+ --container-max:1200px; --page-pad:clamp(16px,3vw,28px);
 
-      /* WhatsApp */
-      --wa-green:#25D366; --wa-green-d:#1ebe5d; --wa-ring:rgba(37,211,102,.35);
-    }
+/* WhatsApp */
+  --wa-green:#25D366; --wa-green-d:#1ebe5d; --wa-ring:rgba(37,211,102,.35);
+}
 
-    html{
-      min-height:100%;
-      background-image:
-        linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,.06) 40%, rgba(255,255,255,.12) 100%),
-        url("banner%20sin%20nada%20png.png");
-      background-position:center, center; background-size:cover, cover;
-      background-repeat:no-repeat, no-repeat; background-attachment:fixed, fixed;
-    }
-    body{ font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--text); margin:0; background:transparent; }
-    .no-scroll{ overflow:hidden; }
-    .container{ max-width:var(--container-max); margin:0 auto; padding:var(--page-pad); }
+html{
+  min-height:100%;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,.06) 40%, rgba(255,255,255,.12) 100%),
+    url("banner%20sin%20nada%20png.png");
+  background-position:center, center; background-size:cover, cover;
+  background-repeat:no-repeat, no-repeat; background-attachment:fixed, fixed;
+}
+body{ font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--text); margin:0; background:transparent; }
+.no-scroll{ overflow:hidden; }
+.container{ max-width:var(--container-max); margin:0 auto; padding:var(--page-pad); }
 
-    /* Top Bar */
-    .top-bar{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:10px; }
-    h1#main-title{ font-size:clamp(1.25rem,2.1vw,1.6rem); margin:0; line-height:1.25; }
-    .brand-right{ display:flex; align-items:flex-start; gap:12px; padding-right:clamp(8px,1.6vw,18px); }
-    .crest{ width:clamp(110px,12vw,160px); height:auto; border-radius:50%; filter:drop-shadow(0 4px 14px rgba(0,0,0,.12)); transform:translateZ(0); }
+/* Top Bar */
+.top-bar{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:10px; }
+h1#main-title{ font-size:clamp(1.25rem,2.1vw,1.6rem); margin:0; line-height:1.25; }
+.brand-right{ display:flex; align-items:flex-start; gap:12px; padding-right:clamp(8px,1.6vw,18px); }
+.crest{ width:clamp(110px,12vw,160px); height:auto; border-radius:50%; filter:drop-shadow(0 4px 14px rgba(0,0,0,.12)); transform:translateZ(0); }
 
-    .hint{ font-size:.9rem; color:#57606a; margin:0 0 16px; }
-    .is-hidden{ display:none; }
+.hint{ font-size:.9rem; color:#57606a; margin:0 0 16px; }
+.is-hidden{ display:none; }
 
-    /* Layout */
-    .page-grid{ display:grid; grid-template-columns:1fr; gap:16px; align-items:start; }
-    .header-area{ display:grid; grid-template-columns:1fr; gap:14px; }
-    @media (min-width:960px){ .header-area{ grid-template-columns:1.1fr .9fr; } }
+/* Layout */
+.page-grid{ display:grid; grid-template-columns:1fr; gap:16px; align-items:start; }
+.header-area{ display:grid; grid-template-columns:1fr; gap:14px; }
+@media (min-width:960px){ .header-area{ grid-template-columns:1.1fr .9fr; } }
 
-    .header-card{
-      position:relative; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.94);
-      box-shadow:0 6px 24px rgba(0,0,0,.06); backdrop-filter:saturate(120%) blur(3px);
-      padding:14px 16px; overflow:visible;
-      transition: box-shadow .5s var(--ease-soft), transform .5s var(--ease-spring), filter .5s var(--ease-soft);
-    }
-    .header-card:hover{ box-shadow:0 10px 28px rgba(0,0,0,.08); }
-    .card-head{ display:flex; align-items:center; justify-content:space-between; margin:-6px 0 10px; }
-    .card-title{ margin:0; font-size:.95rem; font-weight:700; color:#1f2937; }
-    .below-hint{ font-style:italic; font-weight:400; color:#374151; margin-left:.5ch; }
+.header-card{
+  position:relative; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.94);
+  box-shadow:0 6px 24px rgba(0,0,0,.06); backdrop-filter:saturate(120%) blur(3px);
+  padding:14px 16px; overflow:visible;
+  transition: box-shadow .5s var(--ease-soft), transform .5s var(--ease-spring), filter .5s var(--ease-soft);
+}
+.header-card:hover{ box-shadow:0 10px 28px rgba(0,0,0,.08); }
+.card-head{ display:flex; align-items:center; justify-content:space-between; margin:-6px 0 10px; }
+.card-title{ margin:0; font-size:.95rem; font-weight:700; color:#1f2937; }
+.below-hint{ font-style:italic; font-weight:400; color:#374151; margin-left:.5ch; }
 
-    /* Toolbar */
-    .toolbar{ display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
-    .controls{ order:1; display:flex; gap:.5rem; align-items:center; }
-    .toolbar .cta-text{ order:2; font-size:.92rem; color:#334155; max-width:520px; }
-    #toggle-columns-btn{ order:3; }
-    .toolbar button{
-      padding:10px 14px; border:1px solid #c5d1e3; background:#e8f0f9; border-radius:10px; cursor:pointer;
-      box-shadow:0 1px 2px rgba(0,0,0,.04);
-      transition: background .25s var(--ease-soft), transform .18s var(--ease-soft), box-shadow .25s var(--ease-soft);
-    }
-    .toolbar button:hover{ background:#dbe8f7; box-shadow:0 2px 6px rgba(0,0,0,.08); }
-    .toolbar button:active{ transform:translateY(1px); }
-    .controls label{ font-size:.9rem; color:#334155; }
-    .controls select{ padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:#fff; }
+/* Toolbar */
+.toolbar{ display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+.controls{ order:1; display:flex; gap:.5rem; align-items:center; }
+.toolbar .cta-text{ order:2; font-size:.92rem; color:#334155; max-width:520px; }
+#toggle-columns-btn{ order:3; }
+.toolbar button{
+  padding:10px 14px; border:1px solid #c5d1e3; background:#e8f0f9; border-radius:10px; cursor:pointer;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  transition: background .25s var(--ease-soft), transform .18s var(--ease-soft), box-shadow .25s var(--ease-soft);
+}
+.toolbar button:hover{ background:#dbe8f7; box-shadow:0 2px 6px rgba(0,0,0,.08); }
+.toolbar button:active{ transform:translateY(1px); }
+.controls label{ font-size:.9rem; color:#334155; }
+.controls select{ padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:#fff; }
 
-    /* Key Facts */
-    .key-facts{ display:flex; flex-wrap:wrap; gap:8px 10px; margin:2px 0 2px; }
-    .chip, a.chip{
-      position:relative; display:inline-flex; align-items:center; gap:8px;
-      background:#fff; color:#111827; border:1px solid var(--border); border-radius:999px;
-      padding:6px 10px; font-size:.9rem; line-height:1.2; box-shadow:0 2px 6px rgba(0,0,0,.04);
-      text-decoration:none;
-      transition: transform .25s var(--ease-spring), box-shadow .25s var(--ease-spring);
-    }
-    .chip .label{ font-weight:600; } .chip .value{ opacity:.9; }
-    .dot{ width:8px; height:8px; border-radius:999px; display:inline-block; }
-    .dot-lblue{ background:var(--lblue); } .dot-gray{ background:#bbb; }
+/* Key Facts */
+.key-facts{ display:flex; flex-wrap:wrap; gap:8px 10px; margin:2px 0 2px; }
+.chip, a.chip{
+  position:relative; display:inline-flex; align-items:center; gap:8px;
+  background:#fff; color:#111827; border:1px solid var(--border); border-radius:999px;
+  padding:6px 10px; font-size:.9rem; line-height:1.2; box-shadow:0 2px 6px rgba(0,0,0,.04);
+  text-decoration:none;
+  transition: transform .25s var(--ease-spring), box-shadow .25s var(--ease-spring);
+}
+.chip .label{ font-weight:600; } .chip .value{ opacity:.9; }
+.dot{ width:8px; height:8px; border-radius:999px; display:inline-block; }
+.dot-lblue{ background:var(--lblue); } .dot-gray{ background:#bbb; }
 
-    .chip-accent{ background:#fff7cc; border-color:#f0c420; box-shadow:0 4px 14px rgba(240,196,32,.25); font-size:1rem; padding:8px 12px; font-weight:700; animation:pulse 2.4s ease-in-out infinite; }
-    .chip-accent .value{ opacity:1; }
-    .dot-warn{ background:#f0c420; }
-    @keyframes pulse{ 0%,100%{ box-shadow:0 4px 14px rgba(240,196,32,.25);} 50%{ box-shadow:0 6px 22px rgba(240,196,32,.38);} }
+.chip-accent{ background:#fff7cc; border-color:#f0c420; box-shadow:0 4px 14px rgba(240,196,32,.25); font-size:1rem; padding:8px 12px; font-weight:700; animation:pulse 2.4s ease-in-out infinite; }
+.chip-accent .value{ opacity:1; }
+.dot-warn{ background:#f0c420; }
+@keyframes pulse{ 0%,100%{ box-shadow:0 4px 14px rgba(240,196,32,.25);} 50%{ box-shadow:0 6px 22px rgba(240,196,32,.38);} }
 
-    .chip-tip{
-      position:absolute; left:50%; transform:translateX(-50%); bottom:100%; margin-bottom:8px;
-      background:#111827; color:#fff; padding:8px 10px; border-radius:8px; white-space:nowrap;
-      font-size:.85rem; opacity:0; pointer-events:none; transition:opacity .18s ease;
-      box-shadow:0 8px 22px rgba(0,0,0,.18); z-index:5;
-    }
-    .chip:hover .chip-tip, .chip:focus-within .chip-tip,
-    a.chip:hover .chip-tip, a.chip:focus-within .chip-tip{ opacity:1; }
+.chip-tip{
+  position:absolute; left:50%; transform:translateX(-50%); bottom:100%; margin-bottom:8px;
+  background:#111827; color:#fff; padding:8px 10px; border-radius:8px; white-space:nowrap;
+  font-size:.85rem; opacity:0; pointer-events:none; transition:opacity .18s ease;
+  box-shadow:0 8px 22px rgba(0,0,0,.18); z-index:5;
+}
+.chip:hover .chip-tip, .chip:focus-within .chip-tip,
+a.chip:hover .chip-tip, a.chip:focus-within .chip-tip{ opacity:1; }
 
-    .place-chip{ cursor:pointer; }
-    .place-chip:hover, .place-chip:focus{
-      transform: perspective(600px) rotateX(8deg) rotateY(-6deg) translateZ(4px);
-      box-shadow: 0 12px 26px rgba(0,0,0,.18);
-    }
+.place-chip{ cursor:pointer; }
+.place-chip:hover, .place-chip:focus{
+  transform: perspective(600px) rotateX(8deg) rotateY(-6deg) translateZ(4px);
+  box-shadow: 0 12px 26px rgba(0,0,0,.18);
+}
 
-    @media (max-width:720px){ .chip{ font-size:.85rem; padding:5px 9px; } .chip-accent{ font-size:.95rem; } }
+@media (max-width:720px){ .chip{ font-size:.85rem; padding:5px 9px; } .chip-accent{ font-size:.95rem; } }
 
-    /* Table Card */
-    .table-card{
-      border:1px solid var(--border); border-radius:14px; background:#fff; box-shadow:0 10px 30px rgba(0,0,0,.06);
-      overflow:visible; transition: box-shadow .6s var(--ease-soft), transform .6s var(--ease-spring), filter .6s var(--ease-soft);
-      position:relative; z-index:1;
-    }
-    .table-card.opening{ animation:cardOpen var(--card-open); }
-    .table-card.closing{ animation:cardClose var(--card-close); }
-    @keyframes cardOpen{ 0%{ opacity:.94; transform:translateY(-4px) scale(.997);} 60%{ opacity:1; transform:translateY(0) scale(1.001);} 100%{ opacity:1; transform:none;} }
-    @keyframes cardClose{ 0%{ opacity:1; transform:none;} 100%{ opacity:.985; transform:translateY(-2px) scale(.999);} }
+/* Table Card */
+.table-card{
+  border:1px solid var(--border); border-radius:14px; background:#fff; box-shadow:0 10px 30px rgba(0,0,0,.06);
+  overflow:visible; transition: box-shadow .6s var(--ease-soft), transform .6s var(--ease-spring), filter .6s var(--ease-soft);
+  position:relative; z-index:1;
+}
+.table-card.opening{ animation:cardOpen var(--card-open); }
+.table-card.closing{ animation:cardClose var(--card-close); }
+@keyframes cardOpen{ 0%{ opacity:.94; transform:translateY(-4px) scale(.997);} 60%{ opacity:1; transform:translateY(0) scale(1.001);} 100%{ opacity:1; transform:none;} }
+@keyframes cardClose{ 0%{ opacity:1; transform:none;} 100%{ opacity:.985; transform:translateY(-2px) scale(.999);} }
 
-    .table-wrap{ position:relative; overflow:visible; }
-    table{ width:100%; border-collapse:collapse; table-layout:fixed; background:#fff; border-radius:14px; }
-    thead th{ text-align:center; background:var(--bg-parent); border:1px solid var(--border); padding:10px; position:relative; }
-    tbody td, tbody th{ border:1px solid var(--border); padding:10px; vertical-align:middle; text-align:center; }
+.table-wrap{ position:relative; overflow:visible; }
+table{ width:100%; border-collapse:collapse; table-layout:fixed; background:#fff; border-radius:14px; }
+thead th{ text-align:center; background:var(--bg-parent); border:1px solid var(--border); padding:10px; position:relative; }
+tbody td, tbody th{ border:1px solid var(--border); padding:10px; vertical-align:middle; text-align:center; }
 
-    thead th, tbody td{
-      transition:
-        opacity var(--t-opacity) var(--ease-verysoft),
-        width   var(--t-geom)   var(--ease-spring),
-        padding-left  var(--t-geom) var(--ease-spring),
-        padding-right var(--t-geom) var(--ease-spring),
-        border-width  var(--t-border) var(--ease-soft),
-        border-color  var(--t-border) var(--ease-soft),
-        background-color .62s var(--ease-soft);
-      transition-delay: var(--stagger,0ms);
-    }
+thead th, tbody td{
+  transition:
+    opacity var(--t-opacity) var(--ease-verysoft),
+    width   var(--t-geom)   var(--ease-spring),
+    padding-left  var(--t-geom) var(--ease-spring),
+    padding-right var(--t-geom) var(--ease-spring),
+    border-width  var(--t-border) var(--ease-soft),
+    border-color  var(--t-border) var(--ease-soft),
+    background-color .62s var(--ease-soft);
+  transition-delay: var(--stagger,0ms);
+}
 
-    /* Collapsed: hide columns 1–7, keep colors */
-    #cost-table.collapsed .col-1,
-    #cost-table.collapsed .col-2,
-    #cost-table.collapsed .col-3,
-    #cost-table.collapsed .col-4,
-    #cost-table.collapsed .col-5,
-    #cost-table.collapsed .col-6,
-    #cost-table.collapsed .col-7{
-      opacity:0; width:0 !important; padding-left:0 !important; padding-right:0 !important; border-width:0 !important; border-color:transparent !important; overflow:hidden;
-    }
-    #cost-table.collapsed .col-8{ background:var(--green) !important; border:2px solid #000 !important; }
-    #cost-table.collapsed .col-9{ background:var(--green2) !important; border:2px solid #000 !important; }
+/* Collapsed: hide columns 1–7, keep colors */
+#cost-table.collapsed .col-1,
+#cost-table.collapsed .col-2,
+#cost-table.collapsed .col-3,
+#cost-table.collapsed .col-4,
+#cost-table.collapsed .col-5,
+#cost-table.collapsed .col-6,
+#cost-table.collapsed .col-7{
+  opacity:0; width:0 !important; padding-left:0 !important; padding-right:0 !important; border-width:0 !important; border-color:transparent !important; overflow:hidden;
+}
+#cost-table.collapsed .col-8{ background:var(--green) !important; border:2px solid #000 !important; }
+#cost-table.collapsed .col-9{ background:var(--green2) !important; border:2px solid #000 !important; }
 
-    /* Expanded colors (angepasst) */
-    #cost-table:not(.collapsed) .col-2{ background:var(--pink) !important; }
-    #cost-table:not(.collapsed) .col-3{ background:var(--lblue) !important; }
-    #cost-table:not(.collapsed) .col-4{ background:var(--lblue) !important; }
-    #cost-table:not(.collapsed) .col-5{ background:var(--blue) !important; }
-    #cost-table:not(.collapsed) .col-6{ background:var(--violet) !important; } /* Loco */
-    #cost-table:not(.collapsed) .col-7{ background:var(--orange) !important; } /* Consult */
-    #cost-table:not(.collapsed) .col-8{ background:var(--green) !important; border:2px solid #000 !important; }
-    #cost-table:not(.collapsed) .col-9{ background:var(--green2) !important; }
+/* Expanded colors (angepasst) */
+#cost-table:not(.collapsed) .col-2{ background:var(--pink) !important; }
+#cost-table:not(.collapsed) .col-3{ background:var(--lblue) !important; }
+#cost-table:not(.collapsed) .col-4{ background:var(--lblue) !important; }
+#cost-table:not(.collapsed) .col-5{ background:var(--blue) !important; }
+#cost-table:not(.collapsed) .col-6{ background:var(--violet) !important; } /* Loco */
+#cost-table:not(.collapsed) .col-7{ background:var(--orange) !important; } /* Consult */
+#cost-table:not(.collapsed) .col-8{ background:var(--green) !important; border:2px solid #000 !important; }
+#cost-table:not(.collapsed) .col-9{ background:var(--green2) !important; }
 
-    /* Row hover + bold col-8 */
-    #cost-table:not(.collapsed) tbody tr > th,
-    #cost-table:not(.collapsed) tbody tr > td{ transition:box-shadow 360ms var(--ease-verysoft), font-weight 240ms var(--ease-verysoft); }
-    #cost-table:not(.collapsed) tbody tr:hover > th,
-    #cost-table:not(.collapsed) tbody tr:hover > td{ box-shadow:inset 0 0 0 100vmax rgba(255,235,150,.16); }
-    #cost-table:not(.collapsed) tbody tr:hover > .col-8,
-    #cost-table:not(.collapsed) tbody tr:focus-within > .col-8{ font-weight:700; }
+/* Row hover + bold col-8 */
+#cost-table:not(.collapsed) tbody tr > th,
+#cost-table:not(.collapsed) tbody tr > td{ transition:box-shadow 360ms var(--ease-verysoft), font-weight 240ms var(--ease-verysoft); }
+#cost-table:not(.collapsed) tbody tr:hover > th,
+#cost-table:not(.collapsed) tbody tr:hover > td{ box-shadow:inset 0 0 0 100vmax rgba(255,235,150,.16); }
+#cost-table:not(.collapsed) tbody tr:hover > .col-8,
+#cost-table:not(.collapsed) tbody tr:focus-within > .col-8{ font-weight:700; }
 
-    /* Tip bubbles */
-    table, thead, tr, th{ overflow:visible; }
-    .tip-bubble{
-      position:absolute; left:50%; transform:translateX(-50%); bottom:100%; margin-bottom:8px;
-      background:#111827; color:#fff; padding:8px 10px; border-radius:8px; white-space:nowrap;
-      font-size:.9rem; opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:5;
-      box-shadow:0 8px 22px rgba(0,0,0,.18);
-    }
-    th:hover .tip-bubble, th:focus-within .tip-bubble{ opacity:1; }
-    .dot-tip{ display:inline-block; width:8px; height:8px; border-radius:999px; margin-right:6px; vertical-align:middle; }
-    .pink{ background:var(--pink); } .blue{ background:var(--blue); } .lblue{ background:var(--lblue); } .green{ background:var(--green); } .orange{ background:var(--orange); } .violet{ background:var(--violet); }
+/* Tip bubbles */
+table, thead, tr, th{ overflow:visible; }
+.tip-bubble{
+  position:absolute; left:50%; transform:translateX(-50%); bottom:100%; margin-bottom:8px;
+  background:#111827; color:#fff; padding:8px 10px; border-radius:8px; white-space:nowrap;
+  font-size:.9rem; opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:5;
+  box-shadow:0 8px 22px rgba(0,0,0,.18);
+}
+th:hover .tip-bubble, th:focus-within .tip-bubble{ opacity:1; }
+.dot-tip{ display:inline-block; width:8px; height:8px; border-radius:999px; margin-right:6px; vertical-align:middle; }
+.pink{ background:var(--pink); } .blue{ background:var(--blue); } .lblue{ background:var(--lblue); } .green{ background:var(--green); } .orange{ background:var(--orange); } .violet{ background:var(--violet); }
 
-    td.invert-cell{ background:#000; color:#fff; }
-    .italic{ font-style:italic; }
+td.invert-cell{ background:#000; color:#fff; }
+.italic{ font-style:italic; }
 
-    @media (prefers-reduced-motion:reduce){
-      .table-card{ animation:none !important; }
-      thead th, tbody td{ transition:none !important; }
-    }
+@media (prefers-reduced-motion:reduce){
+  .table-card{ animation:none !important; }
+  thead th, tbody td{ transition:none !important; }
+}
 
-    /* ======== FULLSCREEN POPUP (Overlay) ======== */
-    .popup{ position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); padding:24px; }
-    .popup.show{ display:flex; }
-    .popup .panel{ display:flex; align-items:center; gap:14px; background:#fffef6; border:1px solid #f0c420; border-radius:16px; box-shadow:0 20px 50px rgba(0,0,0,.35); padding:16px 18px; max-width:560px; width:min(92vw,520px); }
-    .popup .gif{ width:72px; height:auto; border-radius:6px; flex:0 0 auto; }
-    .popup .msg{ font-weight:700; line-height:1.35; color:#1f2937; }
-    .popup .close{ margin-left:auto; border:none; background:transparent; font-size:22px; cursor:pointer; line-height:1; color:#1f2937; }
+/* ======== FULLSCREEN POPUP (Overlay) ======== */
+.popup{ position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); padding:24px; }
+.popup.show{ display:flex; }
+.popup .panel{ display:flex; align-items:center; gap:14px; background:#fffef6; border:1px solid #f0c420; border-radius:16px; box-shadow:0 20px 50px rgba(0,0,0,.35); padding:16px 18px; max-width:560px; width:min(92vw,520px); }
+.popup .gif{ width:72px; height:auto; border-radius:6px; flex:0 0 auto; }
+.popup .msg{ font-weight:700; line-height:1.35; color:#1f2937; }
+.popup .close{ margin-left:auto; border:none; background:transparent; font-size:22px; cursor:pointer; line-height:1; color:#1f2937; }
 
-    /* ===== WhatsApp FAB ===== */
-    .wa-fab{ position:fixed; right:clamp(12px,2vw,18px); bottom:clamp(12px,2vw,18px); z-index:900; display:inline-flex; align-items:center; gap:10px; padding:10px 12px; background:linear-gradient(180deg,var(--wa-green),var(--wa-green-d)); color:#fff; border:1px solid #1aa855; border-radius:999px; box-shadow:0 10px 24px rgba(0,0,0,.18); text-decoration:none; font-weight:700; line-height:1.2; transition:transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s ease, filter .2s ease; }
-    .wa-fab:hover, .wa-fab:focus{ transform:translateY(-1px); box-shadow:0 14px 30px rgba(0,0,0,.22); filter:saturate(1.05); }
-    .wa-fab:focus-visible{ outline:none; box-shadow:0 0 0 3px var(--wa-ring), 0 10px 24px rgba(0,0,0,.18); }
-    .wa-circle{ width:28px; height:28px; border-radius:50%; background:#fff; display:inline-flex; align-items:center; justify-content:center; box-shadow: inset 0 -1px 0 rgba(0,0,0,.05), 0 2px 6px rgba(0,0,0,.12); overflow:hidden; flex:0 0 auto; }
-    .wa-img{ width:26px; height:26px; object-fit:cover; display:block; transform:translateZ(0); }
-    .wa-fab-label{ display:none; white-space:nowrap; }
-    @media (max-width:767.98px){ .wa-fab-label{ display:inline; } }
+/* ===== WhatsApp FAB ===== */
+.wa-fab{ position:fixed; right:clamp(12px,2vw,18px); bottom:clamp(12px,2vw,18px); z-index:900; display:inline-flex; align-items:center; gap:10px; padding:10px 12px; background:linear-gradient(180deg,var(--wa-green),var(--wa-green-d)); color:#fff; border:1px solid #1aa855; border-radius:999px; box-shadow:0 10px 24px rgba(0,0,0,.18); text-decoration:none; font-weight:700; line-height:1.2; transition:transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s ease, filter .2s ease; }
+.wa-fab:hover, .wa-fab:focus{ transform:translateY(-1px); box-shadow:0 14px 30px rgba(0,0,0,.22); filter:saturate(1.05); }
+.wa-fab:focus-visible{ outline:none; box-shadow:0 0 0 3px var(--wa-ring), 0 10px 24px rgba(0,0,0,.18); }
+.wa-circle{ width:28px; height:28px; border-radius:50%; background:#fff; display:inline-flex; align-items:center; justify-content:center; box-shadow: inset 0 -1px 0 rgba(0,0,0,.05), 0 2px 6px rgba(0,0,0,.12); overflow:hidden; flex:0 0 auto; }
+.wa-img{ width:26px; height:26px; object-fit:cover; display:block; transform:translateZ(0); }
+.wa-fab-label{ display:none; white-space:nowrap; }
+@media (max-width:767.98px){ .wa-fab-label{ display:inline; } }
 
-    /* ===== Locobox & Consult-Box ===== */
-    .locobox, .consultbox{
-      margin-top:16px; border:2px solid var(--blue); border-radius:12px; background:#fff;
-      box-shadow:0 6px 20px rgba(0,0,0,.06); padding:14px;
-    }
-    .locobox h3, .consultbox h3{ margin:0 0 12px 0; font-size:1rem; font-weight:700; color:#1f2937; }
-    .locotable, .consulttable{ width:100%; border-collapse:collapse; }
-    .locotable th, .locotable td, .consulttable th, .consulttable td{ border:1px solid var(--border); padding:8px; text-align:center; }
-    .highlight{ font-weight:700; background:var(--orange); }
-    .small-note{ margin-top:8px; font-size:.85rem; color:#374151; font-style:italic; }
+/* ===== Locobox & Consult-Box ===== */
+.locobox, .consultbox{
+  margin-top:16px; border:2px solid var(--blue); border-radius:12px; background:#fff;
+  box-shadow:0 6px 20px rgba(0,0,0,.06); padding:14px;
+}
+.locobox h3, .consultbox h3{ margin:0 0 12px 0; font-size:1rem; font-weight:700; color:#1f2937; }
+.locotable, .consulttable{ width:100%; border-collapse:collapse; }
+.locotable th, .locotable td, .consulttable th, .consulttable td{ border:1px solid var(--border); padding:8px; text-align:center; }
+.highlight{ font-weight:700; background:var(--orange); }
+.small-note{ margin-top:8px; font-size:.85rem; color:#374151; font-style:italic; }
 
-    /* Button für Buchung */
-    .btn{
-      display:inline-block; padding:10px 14px; border:1px solid #c5d1e3; background:#e8f0f9; border-radius:10px; text-decoration:none; font-weight:700; color:#111827;
-      box-shadow:0 1px 2px rgba(0,0,0,.04);
-      transition: background .25s var(--ease-soft), transform .18s var(--ease-soft), box-shadow .25s var(--ease-soft);
-    }
-    .btn:hover{ background:#dbe8f7; box-shadow:0 2px 6px rgba(0,0,0,.08); }
-    .btn:active{ transform:translateY(1px); }
-    .consult-steps{ margin:0 0 10px 0; padding-left:18px; }
-    .consult-steps li{ margin:4px 0; }
+/* Button für Buchung */
+.btn{
+  display:inline-block; padding:10px 14px; border:1px solid #c5d1e3; background:#e8f0f9; border-radius:10px; text-decoration:none; font-weight:700; color:#111827;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  transition: background .25s var(--ease-soft), transform .18s var(--ease-soft), box-shadow .25s var(--ease-soft);
+}
+.btn:hover{ background:#dbe8f7; box-shadow:0 2px 6px rgba(0,0,0,.08); }
+.btn:active{ transform:translateY(1px); }
+.consult-steps{ margin:0 0 10px 0; padding-left:18px; }
+.consult-steps li{ margin:4px 0; }
 
-    /* kleine Quellenlinks */
-    .src{ font-size:.8rem; color:#334155; text-decoration:underline; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <!-- Top-Bar -->
-    <div class="top-bar">
-      <h1 id="main-title">Llistat de preus <em>English Montessori 2.1</em> (Vista resumida)</h1>
-      <div class="brand-right" aria-label="Foto">
-        <img class="crest" src="profile_editM2%2C1.png" alt="Foto coordinador" />
+/* kleine Quellenlinks */
+.src{ font-size:.8rem; color:#334155; text-decoration:underline; }
+
+</style>
+ </head>
+ <body>
+ <div class="container">
+ <!-- Top-Bar -->
+ <div class="top-bar">
+ <h1 id="main-title">Llistat de preus <em>English Montessori 2.1</em> (Vista resumida)</h1>
+ <div class="brand-right" aria-label="Foto">
+ <img class="crest" src="profile_editM2%2C1.png" alt="Foto coordinador" />
+ </div>
+ </div>
+
+<p class="hint" id="hint">...</p>
+
+<div class="page-grid">
+  <div class="header-area">
+    <!-- Card 1: Sprache & Einstellungen -->
+    <section class="header-card" aria-label="Sprache & Einstellungen">
+      <div class="card-head">
+        <h2 class="card-title" id="card1-title">Sprache &amp; Einstellungen</h2>
       </div>
-    </div>
+      <div class="toolbar" role="region" aria-label="Werkzeuge">
+        <div class="controls">
+          <label for="lang-select" id="lang-label">Sprache:</label>
+          <select id="lang-select" aria-label="Language selector">
+            <option value="ca">Català</option>
+            <option value="es">Castellano</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <span class="cta-text" id="cta-line">
+          Vols saber com fixem els preus? → Prem «Transparència total» i veu el detall de tots els costos.
+        </span>
+        <button type="button" id="toggle-columns-btn" aria-live="polite">Transparència total</button>
+      </div>
+    </section>
 
-    <p class="hint" id="hint">...</p>
-
-    <div class="page-grid">
-      <div class="header-area">
-        <!-- Card 1: Sprache & Einstellungen -->
-        <section class="header-card" aria-label="Sprache & Einstellungen">
-          <div class="card-head">
-            <h2 class="card-title" id="card1-title">Sprache &amp; Einstellungen</h2>
-          </div>
-          <div class="toolbar" role="region" aria-label="Werkzeuge">
-            <div class="controls">
-              <label for="lang-select" id="lang-label">Sprache:</label>
-              <select id="lang-select" aria-label="Language selector">
-                <option value="ca">Català</option>
-                <option value="es">Castellano</option>
-                <option value="en">English</option>
-              </select>
-            </div>
-            <span class="cta-text" id="cta-line">
-              Vols saber com fixem els preus? → Prem «Transparència total» i veu el detall de tots els costos.
-            </span>
-            <button type="button" id="toggle-columns-btn" aria-live="polite">Transparència total</button>
-          </div>
-        </section>
-
-        <!-- Card 2: Key Facts -->
-        <section class="header-card" aria-label="Key Facts">
-          <div class="card-head">
-            <h2 class="card-title" id="card2-title">Key Facts</h2>
-          </div>
-
-          <div class="key-facts" id="facts">
-            <span class="chip chip-accent" role="note" aria-live="polite">
-              <span class="dot dot-warn" aria-hidden="true"></span>
-              <span class="value" id="chip-payonly" data-i18n="chip_payonly">...</span>
-              <span class="chip-tip" id="chip-payonly-tip">Pagament just: sense assistència, sense cost.</span>
-            </span>
-
-            <span class="chip">
-              <span class="dot dot-gray" aria-hidden="true"></span>
-              <span class="label" data-i18n="chip_alumnes_label">Alumnes:</span>
-              <span class="value" id="chip-alumnes-val">1–5</span>
-              <span class="chip-tip" id="tip-chip-alumnes">Entre 1 i 5 alumnes per classe</span>
-            </span>
-
-            <span class="chip">
-              <span class="dot dot-lblue" aria-hidden="true"></span>
-              <span class="label" data-i18n="chip_class_label">Durada classe:</span>
-              <span class="value" id="chip-class-val">~90&nbsp;min</span>
-              <span class="chip-tip" id="tip-chip-class">Sessió + 10 min d’arribada/berenar</span>
-            </span>
-
-            <!-- Horari als ein Feld mit 2 Zeilen -->
-            <span class="chip">
-              <span class="dot dot-gray" aria-hidden="true"></span>
-              <span class="label" data-i18n="chip_time_label">Horari:</span>
-              <span class="value" id="chip-time-val">
-                Migdia: 13:00–14:30<br>
-                Vespre: 16:45–18:15
-              </span>
-              <span class="chip-tip" id="tip-chip-time">Horari habitual de les classes</span>
-            </span>
-
-            <!-- CLICKABLE Place chip -->
-            <a class="chip place-chip" id="chip-place" href="https://maps.app.goo.gl/4fxuKmex1RtPQtVw8" target="_blank" rel="noopener" tabindex="0" title="Obrir a Google Maps">
-              <span class="dot dot-gray" aria-hidden="true"></span>
-              <span class="label" data-i18n="chip_place_label">Ubicació:</span>
-              <span class="value" id="chip-place-val">Escola Sant Esteve de Guialbes</span>
-              <span class="chip-tip" id="tip-chip-place">Obrir a Google Maps</span>
-            </a>
-
-            <!-- Family discount -->
-            <span class="chip">
-              <span class="dot dot-gray" aria-hidden="true"></span>
-              <span class="label" data-i18n="chip_family_label">Descompte familiar:</span>
-              <span class="value" id="chip-family-val">- 1,25 € / classe / alumne</span>
-              <span class="chip-tip" id="tip-chip-family"><em>- 10 € / mes / família</em></span>
-            </span>
-          </div>
-        </section>
+    <!-- Card 2: Key Facts -->
+    <section class="header-card" aria-label="Key Facts">
+      <div class="card-head">
+        <h2 class="card-title" id="card2-title">Key Facts</h2>
       </div>
 
-      <!-- Tabelle -->
-      <section class="table-card" id="table-card">
-        <div class="table-wrap">
-          <table id="cost-table" class="collapsed" aria-live="polite">
-            <thead>
-              <tr>
-                <th tabindex="0" class="col-0" id="th-alumnes">
-                  Alumnes
-                  <span class="tip-bubble"><span class="dot-tip" style="background:#999"></span><span data-i18n="tip_alumnes">Mida del grup: entre 1 i 5 alumnes com a màxim</span></span>
-                </th>
-                <th tabindex="0" class="col-1" id="th-preu-base">
-                  <span class="col-label" data-i18n="th_base">Preu base/classe per alumne</span>
-                  <span class="tip-bubble"><span class="dot-tip" style="background:#000"></span><span data-i18n="tip_base">Preu base orientat a classe particular «Only for you»</span></span>
-                </th>
-                <th tabindex="0" class="col-2" id="th-material">
-                  <span data-i18n="th_material">Cost de material</span>
-                  <span class="tip-bubble"><span class="dot-tip pink"></span><span data-i18n="tip_material">per alumne i sessió: 1 € en material / manteniment</span></span>
-                </th>
-                <th tabindex="0" class="col-3" id="th-mes">
-                  <span data-i18n="th_mes">Temps preparació classe/mes (hores)</span>
-                  <span class="tip-bubble"><span class="dot-tip lblue"></span><span data-i18n="tip_mes">1 h de prep. al mes pel primer alumne, +30 min per cadascun extra</span></span>
-                </th>
-                <th tabindex="0" class="col-4" id="th-prep-min">
-                  <span data-i18n="th_prepmin">Temps de preparació de classe/dia (min.)</span>
-                  <span class="tip-bubble"><span class="dot-tip lblue"></span><span data-i18n="tip_prepmin">Com més gran el grup, més temps de preparació</span></span>
-                </th>
-                <th tabindex="0" class="col-5" id="th-prep-dia">
-                  <span data-i18n="th_prepdia">Preu de preparació al dia</span>
-                  <span class="tip-bubble"><span class="dot-tip blue"></span><span data-i18n="tip_prepdia">Tarifa de preparació: 12 €/h</span></span>
-                </th>
+      <div class="key-facts" id="facts">
+        <span class="chip chip-accent" role="note" aria-live="polite">
+          <span class="dot dot-warn" aria-hidden="true"></span>
+          <span class="value" id="chip-payonly" data-i18n="chip_payonly">...</span>
+          <span class="chip-tip" id="chip-payonly-tip">Pagament just: sense assistència, sense cost.</span>
+        </span>
 
-                <!-- Locomotion first -->
-                <th tabindex="0" class="col-6" id="th-loco">
-                  <span>Preu locomoció</span>
-                  <span class="tip-bubble"><span class="dot-tip violet"></span>Cost de desplaçament (anada i tornada) prorratejat per alumne</span>
-                </th>
+        <span class="chip">
+          <span class="dot dot-gray" aria-hidden="true"></span>
+          <span class="label" data-i18n="chip_alumnes_label">Alumnes:</span>
+          <span class="value" id="chip-alumnes-val">1–5</span>
+          <span class="chip-tip" id="tip-chip-alumnes">Entre 1 i 5 alumnes per classe</span>
+        </span>
 
-                <!-- Consultation -->
-                <th tabindex="0" class="col-7" id="th-consult">
-                  <span id="th-consult-label">Suplement de tutoria</span>
-                  <span class="tip-bubble"><span class="dot-tip orange"></span><span id="tip_consult">Suplement per classe per cobrir 15 min de tutoria per trimestre.</span></span>
-                </th>
+        <span class="chip">
+          <span class="dot dot-lblue" aria-hidden="true"></span>
+          <span class="label" data-i18n="chip_class_label">Durada classe:</span>
+          <span class="value" id="chip-class-val">~90&nbsp;min</span>
+          <span class="chip-tip" id="tip-chip-class">Sessió + 10 min d’arribada/berenar</span>
+        </span>
 
-                <th tabindex="0" class="col-8" id="th-preu-classe">
-                  <span data-i18n="th_preuclasse">Preu/Classe per alumnes</span>
-                  <span class="tip-bubble"><span class="dot-tip green"></span><span data-i18n="tip_preuclasse">Preu per alumne i classe</span></span>
-                </th>
-                <th tabindex="0" class="col-9" id="th-mes4">
-                  <span data-i18n="th_mes4">Al mes - 4x setmanes</span>
-                  <span class="tip-bubble"><span class="dot-tip" style="background:#bbb"></span><span data-i18n="tip_mes4">Preu mensual (4 setmanes)</span></span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- n=1..5; material überall 1.00 €; loco 11.42 verteilt; prep-dia tooltips kindgerecht -->
-              <tr>
-                <td>1</td>
-                <td class="invert-cell">20.00 €</td>
-                <td>1.00 €</td>
-                <td>1 h</td>
-                <td>00:15:00</td>
-                <td title="Preparació: 15 min · a 0,20 €/min → 3,00 €">3.00 €</td>
-                <td>11.42 €</td>
-                <td class="consult-cell">0.42 €</td>
-                <td>35.84 €</td>
-                <td>143.36 €</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>15.00 €</td>
-                <td>1.00 €</td>
-                <td>1.5 h</td>
-                <td>00:22:30</td>
-                <td title="Dos alumnes: 3,00 € + 1,50 € → dividit entre 2 = 2,25 €">2.25 €</td>
-                <td>5.71 €</td>
-                <td class="consult-cell">0.42 €</td>
-                <td>24.38 €</td>
-                <td>97.52 €</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>11.25 €</td>
-                <td>1.00 €</td>
-                <td>2 h</td>
-                <td>00:30:00</td>
-                <td title="Tres alumnes: 3,00 € + 1,50 € + 1,50 € = 6,00 € → /3 = 2,00 €">2.00 €</td>
-                <td>3.81 €</td>
-                <td class="consult-cell">0.42 €</td>
-                <td>18.48 €</td>
-                <td>73.92 €</td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td>8.44 €</td>
-                <td>1.00 €</td>
-                <td>2.5 h</td>
-                <td>00:37:30</td>
-                <td title="Quatre alumnes: cost total 7,50 € → dividit entre 4 ≈ 1,88 €">1.88 €</td>
-                <td>2.86 €</td>
-                <td class="consult-cell">0.42 €</td>
-                <td>14.60 €</td>
-                <td>58.40 €</td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>6.33 €</td>
-                <td>1.00 €</td>
-                <td>3 h</td>
-                <td>00:45:00</td>
-                <td title="Cinc alumnes: cost total 9,00 € → dividit entre 5 = 1,80 €">1.80 €</td>
-                <td>2.28 €</td>
-                <td class="consult-cell">0.42 €</td>
-                <td>11.83 €</td>
-                <td>47.32 €</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <!-- Horari als ein Feld mit 2 Zeilen -->
+        <span class="chip">
+          <span class="dot dot-gray" aria-hidden="true"></span>
+          <span class="label" data-i18n="chip_time_label">Horari:</span>
+          <span class="value" id="chip-time-val">
+            Migdia: 13:00–14:30<br>
+            Vespre: 16:45–18:15
+          </span>
+          <span class="chip-tip" id="tip-chip-time">Horari habitual de les classes</span>
+        </span>
 
-        <!-- Tutoria-Box im COLLAPSED-Zustand unter der Tabelle sichtbar -->
-        <div class="consultbox" id="consult-collapsed" style="margin-top:12px;">
-          <h3 id="consult-title-collapsed">Suplement de tutoria (1×/trimestre, 15 min inclosa)</h3>
-          <ul class="consult-steps" id="consult-steps-collapsed"></ul>
-          <a class="btn" id="consult-cta-collapsed" href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2JoyseICO5wz-KG7bYrHDy9wK2kXvgAfjN0nYNthg1dE8M5IC1EpX8L7HchU3bbw2VVkAC2J2t" target="_blank" rel="noopener">Reservar tutoria</a>
-          <div class="small-note" id="consult-note-collapsed">La classe inclou una tutoría de 15 min por trimestre. Adicionales: 5 € / 15 min.</div>
-        </div>
-      </section>
-
-      <!-- Unter der Tabelle: Preu locomoció + Tutoria (Detailbereich, wenn ausgeklappt) -->
-      <section class="header-card is-hidden" id="below-section" aria-label="Preu locomoció" style="margin-top:12px;">
-        <div class="card-head">
-          <h2 class="card-title" id="below-title">Preu locomoció
-            <span class="below-hint">– valors del càlcul i distribució per alumne</span>
-          </h2>
-        </div>
-
-        <div class="locobox">
-          <h3 id="loco-title">Preu locomoció</h3>
-          <table class="locotable">
-            <tr>
-              <th id="loco-h-fuel">Preu del combustible [€/l] <a class="src" href="https://www.clickgasoil.com/c/evolucion-del-precio-gasolina-95-catalua" target="_blank" rel="noopener">font</a></th>
-              <th id="loco-h-cons">Consum [l/100 km] <a class="src" href="https://www.autokostencheck.de/Smart/Smart/Smart-Fortwo/smart-fortwo-1-0-coupe_31830/verbrauch/?utm_source=chatgpt.com" target="_blank" rel="noopener">font</a></th>
-              <th id="loco-h-dist">Distància [km] <a class="src" href="https://www.viamichelin.es/itinerarios/resultados?bounds=-9.3013602~36.0002408~3.3224642~43.7903881&car=11650~Fortwo~false~false~GASOLINE~SMART&corridor=SERVICE_GAS_STATION~&currency=eur&distanceSystem=METRIC&energyPrice=1.483&from=El+Teatret+De+Ventallo%2C+Calle+Bassa%2C+8%2C+17473+Ventall%C3%B3&itinerary=%7B%22l%22%3A%22El+Teatret+De+Ventallo%2C+Calle+Bassa%2C+8%2C+17473+Ventall%C3%B3%22%2C%22c%22%3A%7B%22lng%22%3A3.026195%2C%22lat%22%3A42.14789%7D%7D~%7B%22l%22%3A%22Escuela+de+Sant+Esteve+de+Guialbes%2C+Calle+de+San+Esteve%2C+17468+Vilademuls%22%2C%22c%22%3A%7B%22lng%22%3A2.875626%2C%22lat%22%3A42.115071%7D%2C%22isArrival%22%3Atrue%7D&poiCategories=0&selectedRoute=0&to=Escuela+de+Sant+Esteve+de+Guialbes%2C+Calle+de+San+Esteve%2C+17468+Vilademuls&traffic=CLOSINGS&travelMode=CAR&tripConstraint=NONE&withCaravan=false&zoiSettings=false~20" target="_blank" rel="noopener">font</a></th>
-              <th id="loco-h-indem">Amortització [€/km]</th>
-            </tr>
-            <tr>
-              <td id="loco-v-fuel">1,483</td>
-              <td id="loco-v-cons">5,8</td>
-              <td id="loco-v-dist">34</td>
-              <td id="loco-v-indem">0,25</td>
-            </tr>
-          </table>
-          <table class="locotable" style="margin-top:12px;">
-            <tr><td id="loco-row-fuel">Costos de combustible</td><td>2,92 €</td></tr>
-            <tr><td id="loco-row-trip">Amortització</td><td>8,50 €</td></tr>
-            <tr class="highlight"><td id="loco-row-total">Despesa total (anada i tornada)</td><td>11,42 €</td></tr>
-          </table>
-          <div class="small-note" id="loco-note">* Valors segons càlcul (anada i tornada). Distribuït entre alumnes a la taula principal.</div>
-        </div>
-
-        <!-- Tutoria: Erklärung + Buchung (nicht interaktiv) -->
-        <div class="consultbox" id="consultbox" style="margin-top:16px;">
-          <h3 id="consult-title">Suplement de tutoria (1×/trimestre, 15 min inclosa)</h3>
-          <ul class="consult-steps" id="consult-steps"></ul>
-          <a class="btn" id="consult-cta" href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2JoyseICO5wz-KG7bYrHDy9wK2kXvgAfjN0nYNthg1dE8M5IC1EpX8L7HchU3bbw2VVkAC2J2t" target="_blank" rel="noopener">Reservar tutoria</a>
-          <div class="small-note" id="consult-note">* El suplement (0,42 € per classe) cobreix una tutoria de 15 min per trimestre. Sessions addicionals: 5 € / 15 min.</div>
-        </div>
-
-      </section>
-    </div>
+        <!-- CLICKABLE Place chip -->
+        <a class="chip place-chip" id="chip-place" href="https://maps.app.goo.gl/4fxuKmex1RtPQtVw8" target="_blank" rel="noopener" tabindex="0" title="Obrir a Google Maps">
+          <span class="dot dot-gray" aria-hidden="true"></span>
+          <span class="label" data-i18n="chip_place_label">Ubicació:</span>
+          <span class="value" id="chip-place-val">Escola Sant Esteve de Guialbes</span>
+          <span class="chip-tip" id="tip-chip-place">Obrir a Google Maps</span>
+        </a>
+      </div>
+    </section>
   </div>
 
-  <!-- FULLSCREEN Popup (mit GIF) -->
-  <div class="popup" id="popup-rotate" aria-live="polite" role="dialog" aria-modal="true">
-    <div class="panel">
-      <img class="gif" alt="Rotate phone"
-           src="vecteezy_phone-rotation-from-vertical-to-horizontal-on-black-screen_40245353-ezgif.com-video-to-gif-converter.gif" />
-      <div class="msg" id="popup-rotate-text">Gira el mòbil per veure millor la taula de detalls.</div>
-      <button class="close" aria-label="Cerrar" data-close="popup-rotate">✕</button>
+  <!-- Tabelle -->
+  <section class="table-card" id="table-card">
+    <div class="table-wrap">
+      <table id="cost-table" class="collapsed" aria-live="polite">
+        <thead>
+          <tr>
+            <th tabindex="0" class="col-0" id="th-alumnes">
+              Alumnes
+              <span class="tip-bubble"><span class="dot-tip" style="background:#999"></span><span data-i18n="tip_alumnes">Mida del grup: entre 1 i 5 alumnes com a màxim</span></span>
+            </th>
+            <th tabindex="0" class="col-1" id="th-preu-base">
+              <span class="col-label" data-i18n="th_base">Preu base/classe per alumne</span>
+              <span class="tip-bubble"><span class="dot-tip" style="background:#000"></span><span data-i18n="tip_base">Preu base orientat a classe particular «Only for you»</span></span>
+            </th>
+            <th tabindex="0" class="col-2" id="th-material">
+              <span data-i18n="th_material">Cost de material</span>
+              <span class="tip-bubble"><span class="dot-tip pink"></span><span data-i18n="tip_material">per alumne i sessió: 1 € en material / manteniment</span></span>
+            </th>
+            <th tabindex="0" class="col-3" id="th-mes">
+              <span data-i18n="th_mes">Temps preparació classe/mes (hores)</span>
+              <span class="tip-bubble"><span class="dot-tip lblue"></span><span data-i18n="tip_mes">1 h de prep. al mes pel primer alumne, +30 min per cadascun extra</span></span>
+            </th>
+            <th tabindex="0" class="col-4" id="th-prep-min">
+              <span data-i18n="th_prepmin">Temps de preparació de classe/dia (min.)</span>
+              <span class="tip-bubble"><span class="dot-tip lblue"></span><span data-i18n="tip_prepmin">Com més gran el grup, més temps de preparació</span></span>
+            </th>
+            <th tabindex="0" class="col-5" id="th-prep-dia">
+              <span data-i18n="th_prepdia">Preu de preparació al dia</span>
+              <span class="tip-bubble"><span class="dot-tip blue"></span><span data-i18n="tip_prepdia">Tarifa de preparació: 12 €/h</span></span>
+            </th>
+
+            <!-- Locomotion first -->
+            <th tabindex="0" class="col-6" id="th-loco">
+              <span>Preu locomoció</span>
+              <span class="tip-bubble"><span class="dot-tip violet"></span>Cost de desplaçament (anada i tornada) prorratejat per alumne</span>
+            </th>
+
+            <!-- Consultation -->
+            <th tabindex="0" class="col-7" id="th-consult">
+              <span id="th-consult-label">Suplement de tutoria</span>
+              <span class="tip-bubble"><span class="dot-tip orange"></span><span id="tip_consult">Suplement per classe per cobrir 15 min de tutoria per trimestre.</span></span>
+            </th>
+
+            <th tabindex="0" class="col-8" id="th-preu-classe">
+              <span data-i18n="th_preuclasse">Preu/Classe per alumnes</span>
+              <span class="tip-bubble"><span class="dot-tip green"></span><span data-i18n="tip_preuclasse">Preu per alumne i classe</span></span>
+            </th>
+            <th tabindex="0" class="col-9" id="th-mes4">
+              <span data-i18n="th_mes4">Al mes - 4x setmanes</span>
+              <span class="tip-bubble"><span class="dot-tip" style="background:#bbb"></span><span data-i18n="tip_mes4">Preu mensual (4 setmanes)</span></span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- n=1..5; material überall 1.00 €; loco 11.42 verteilt; prep-dia tooltips kindgerecht -->
+          <tr>
+            <td>1</td>
+            <td class="invert-cell">20.00 €</td>
+            <td>1.00 €</td>
+            <td>1 h</td>
+            <td>00:15:00</td>
+            <td title="Preparació: 15 min · a 0,20 €/min → 3,00 €">3.00 €</td>
+            <td>11.42 €</td>
+            <td class="consult-cell">0.42 €</td>
+            <td>35.84 €</td>
+            <td>143.36 €</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>15.00 €</td>
+            <td>1.00 €</td>
+            <td>1.5 h</td>
+            <td>00:22:30</td>
+            <td title="Dos alumnes: 3,00 € + 1,50 € → dividit entre 2 = 2,25 €">2.25 €</td>
+            <td>5.71 €</td>
+            <td class="consult-cell">0.42 €</td>
+            <td>24.38 €</td>
+            <td>97.52 €</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>11.25 €</td>
+            <td>1.00 €</td>
+            <td>2 h</td>
+            <td>00:30:00</td>
+            <td title="Tres alumnes: 3,00 € + 1,50 € + 1,50 € = 6,00 € → /3 = 2,00 €">2.00 €</td>
+            <td>3.81 €</td>
+            <td class="consult-cell">0.42 €</td>
+            <td>18.48 €</td>
+            <td>73.92 €</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>8.44 €</td>
+            <td>1.00 €</td>
+            <td>2.5 h</td>
+            <td>00:37:30</td>
+            <td title="Quatre alumnes: cost total 7,50 € → dividit entre 4 ≈ 1,88 €">1.88 €</td>
+            <td>2.86 €</td>
+            <td class="consult-cell">0.42 €</td>
+            <td>14.60 €</td>
+            <td>58.40 €</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>6.33 €</td>
+            <td>1.00 €</td>
+            <td>3 h</td>
+            <td>00:45:00</td>
+            <td title="Cinc alumnes: cost total 9,00 € → dividit entre 5 = 1,80 €">1.80 €</td>
+            <td>2.28 €</td>
+            <td class="consult-cell">0.42 €</td>
+            <td>11.83 €</td>
+            <td>47.32 €</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </div>
 
-  <!-- WhatsApp Floating Action Button -->
-  <a id="wa-fab" class="wa-fab" href="#" target="_blank" rel="noopener"
-     aria-label="Contact us on WhatsApp" title="Contact us on WhatsApp">
-    <span class="wa-circle"><img class="wa-img" src="Whatsapp_Button.png" alt="WhatsApp" /></span>
-    <span class="wa-fab-label" id="wa-fab-label">Escriu-nos per WhatsApp</span>
-  </a>
+    <!-- Tutoria-Box im COLLAPSED-Zustand unter der Tabelle sichtbar -->
+    <div class="consultbox" id="consult-collapsed" style="margin-top:12px;">
+      <h3 id="consult-title-collapsed">Suplement de tutoria (1×/trimestre, 15 min inclosa)</h3>
+      <ul class="consult-steps" id="consult-steps-collapsed"></ul>
+      <a class="btn" id="consult-cta-collapsed" href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2JoyseICO5wz-KG7bYrHDy9wK2kXvgAfjN0nYNthg1dE8M5IC1EpX8L7HchU3bbw2VVkAC2J2t" target="_blank" rel="noopener">Reservar tutoria</a>
+      <div class="small-note" id="consult-note-collapsed">La classe inclou una tutoría de 15 min por trimestre. Adicionales: 5 € / 15 min.</div>
+    </div>
+  </section>
 
-  <script>
-    (function(){
-      const table     = document.getElementById('cost-table');
-      const tableCard = document.getElementById('table-card');
-      const btn       = document.getElementById('toggle-columns-btn');
-      const h1        = document.getElementById('main-title');
-      const hint      = document.getElementById('hint');
-      const card1Title= document.getElementById('card1-title');
-      const card2Title= document.getElementById('card2-title');
+  <!-- Unter der Tabelle: Preu locomoció + Tutoria (Detailbereich, wenn ausgeklappt) -->
+  <section class="header-card is-hidden" id="below-section" aria-label="Preu locomoció" style="margin-top:12px;">
+    <div class="card-head">
+      <h2 class="card-title" id="below-title">Preu locomoció
+        <span class="below-hint">– valors del càlcul i distribució per alumne</span>
+      </h2>
+    </div>
 
-      const langSel   = document.getElementById('lang-select');
-      const langLabel = document.getElementById('lang-label');
-      const ctaLine   = document.getElementById('cta-line');
+    <div class="locobox">
+      <h3 id="loco-title">Preu locomoció</h3>
+      <table class="locotable">
+        <tr>
+          <th id="loco-h-fuel">Preu del combustible [€/l] <a class="src" href="https://www.clickgasoil.com/c/evolucion-del-precio-gasolina-95-catalua" target="_blank" rel="noopener">font</a></th>
+          <th id="loco-h-cons">Consum [l/100 km] <a class="src" href="https://www.autokostencheck.de/Smart/Smart/Smart-Fortwo/smart-fortwo-1-0-coupe_31830/verbrauch/?utm_source=chatgpt.com" target="_blank" rel="noopener">font</a></th>
+          <th id="loco-h-dist">Distància [km] <a class="src" href="https://www.viamichelin.es/itinerarios/resultados?bounds=-9.3013602~36.0002408~3.3224642~43.7903881&car=11650~Fortwo~false~false~GASOLINE~SMART&corridor=SERVICE_GAS_STATION~&currency=eur&distanceSystem=METRIC&energyPrice=1.483&from=El+Teatret+De+Ventallo%2C+Calle+Bassa%2C+8%2C+17473+Ventall%C3%B3&itinerary=%7B%22l%22%3A%22El+Teatret+De+Ventallo%2C+Calle+Bassa%2C+8%2C+17473+Ventall%C3%B3%22%2C%22c%22%3A%7B%22lng%22%3A3.026195%2C%22lat%22%3A42.14789%7D%7D~%7B%22l%22%3A%22Escuela+de+Sant+Esteve+de+Guialbes%2C+Calle+de+San+Esteve%2C+17468+Vilademuls%22%2C%22c%22%3A%7B%22lng%22%3A2.875626%2C%22lat%22%3A42.115071%7D%2C%22isArrival%22%3Atrue%7D&poiCategories=0&selectedRoute=0&to=Escuela+de+Sant+Esteve+de+Guialbes%2C+Calle+de+San+Esteve%2C+17468+Vilademuls&traffic=CLOSINGS&travelMode=CAR&tripConstraint=NONE&withCaravan=false&zoiSettings=false~20" target="_blank" rel="noopener">font</a></th>
+          <th id="loco-h-indem">Amortització [€/km]</th>
+        </tr>
+        <tr>
+          <td id="loco-v-fuel">1,483</td>
+          <td id="loco-v-cons">5,8</td>
+          <td id="loco-v-dist">34</td>
+          <td id="loco-v-indem">0,25</td>
+        </tr>
+      </table>
+      <table class="locotable" style="margin-top:12px;">
+        <tr><td id="loco-row-fuel">Costos de combustible</td><td>2,92 €</td></tr>
+        <tr><td id="loco-row-trip">Amortització</td><td>8,50 €</td></tr>
+        <tr class="highlight"><td id="loco-row-total">Despesa total (anada i tornada)</td><td>11,42 €</td></tr>
+      </table>
+      <div class="small-note" id="loco-note">* Valors segons càlcul (anada i tornada). Distribuït entre alumnes a la taula principal.</div>
+    </div>
 
-      const popupRotate     = document.getElementById('popup-rotate');
+    <!-- Tutoria: Erklärung + Buchung (nicht interaktiv) -->
+    <div class="consultbox" id="consultbox" style="margin-top:16px;">
+      <h3 id="consult-title">Suplement de tutoria (1×/trimestre, 15 min inclosa)</h3>
+      <ul class="consult-steps" id="consult-steps"></ul>
+      <a class="btn" id="consult-cta" href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2JoyseICO5wz-KG7bYrHDy9wK2kXvgAfjN0nYNthg1dE8M5IC1EpX8L7HchU3bbw2VVkAC2J2t" target="_blank" rel="noopener">Reservar tutoria</a>
+      <div class="small-note" id="consult-note">* El suplement (0,42 € per classe) cobreix una tutoria de 15 min per trimestre. Sessions addicionals: 5 € / 15 min.</div>
+    </div>
 
-      const belowSection = document.getElementById('below-section');
+  </section>
+</div>
 
-      /* WhatsApp FAB refs */
-      const WA_PHONE   = '34662222407';
-      const waFab      = document.getElementById('wa-fab');
-      const waFabLabel = document.getElementById('wa-fab-label');
+</div> <!-- FULLSCREEN Popup (mit GIF) --> <div class="popup" id="popup-rotate" aria-live="polite" role="dialog" aria-modal="true">
+ <div class="panel">
+ <img class="gif" alt="Rotate phone"
+ src="vecteezy_phone-rotation-from-vertical-to-horizontal-on-black-screen_40245353-ezgif.com-video-to-gif-converter.gif" />
+ <div class="msg" id="popup-rotate-text">Gira el mòbil per veure millor la taula de detalls.</div>
+ <button class="close" aria-label="Cerrar" data-close="popup-rotate">✕</button>
+ </div>
+ </div> <!-- WhatsApp Floating Action Button -->
 
-      const isSmallScreen = () => window.matchMedia('(max-width: 767.98px)').matches;
-      let userInteracted = false;
+<a id="wa-fab" class="wa-fab" href="#" target="_blank" rel="noopener"
+ aria-label="Contact us on WhatsApp" title="Contact us on WhatsApp">
+<span class="wa-circle"><img class="wa-img" src="Whatsapp_Button.png" alt="WhatsApp" /></span>
+<span class="wa-fab-label" id="wa-fab-label">Escriu-nos per WhatsApp</span>
+</a>
 
-      const i18n = {
-        ca:{
-          title_short:'Llistat de preus <em>English Montessori 2.1</em> (Vista resumida)',
-          title_full:'Vista ampliada dels preus – <em>English Montessori 2.1</em>',
-          doc_title:'Vista ampliada dels preus – English Montessori 2.1',
-          hint_collapsed:'Aquí podeu veure el llistat de preus amb la vista resumida',
-          hint_expanded:'Aquí podeu veure el llistat de preus i la informació detallada de les classes',
-          btn_expand:'Transparència total',
-          btn_collapse:'Tornar a la vista resumida',
-          lang_label:'Llengua:',
-          card1:'Llengua i configuració',
-          keyfacts:'Dades clau',
-          cta:'Vols saber com fixem els preus? → Prem «Transparència total» i veu el detall de tots els costos.',
-          rotate_expand:'Gira el mòbil per veure millor la taula de detalls.',
-          ths:['Alumnes','Preu base/classe per alumne','Cost de material','Temps prep. al mes (hores)','Temps de preparació al dia (min.)','Preu de preparació al dia','Preu locomoció','Suplement de tutoria','Preu/Classe per alumnes','Al mes - 4x setmanes'],
-          tips:{
-            alumnes:'Mida del grup: entre 1 i 5 alumnes com a màxim',
-            base:'Preu base orientat a classe particular «Only for you»',
-            material:'per alumne i sessió: 1 € en material / manteniment',
-            mes:'1 h de prep. al mes pel primer alumne, +30 min per cadascun extra',
-            prepmin:'Com més gran el grup, més temps de preparació',
-            prepdia:'Tarifa de preparació: 12 €/h',
-            preuclasse:'Preu per alumne i classe',
-            mes4:'Preu mensual (4 setmanes)',
-            time:'Horari habitual de les classes',
-            classe:'Sessió (~80–90 min) + 10 min d’arribada/berenar'
-          },
-          chips:{ alumnes:'Alumnes:', classe:'Durada classe:', time:'Horari:', place:'Ubicació:', family:'Descompte familiar:' },
-          chipvals:{
-            classe:'~90 min',
-            time:'Migdia: 13:00–14:30<br>Vespre: 16:45–18:15',
-            place:'Escola Sant Esteve de Guialbes'
-          },
-          payonly:'Es paga només per les classes a les quals s’assisteix',
-          payonly_tip:'Pagament just: sense assistència, sense cost.',
-          family_tip:'<em>- 10 € / mes / família</em>',
-          loco:{
-            title:'Preu locomoció',
-            h_fuel:'Preu del combustible [€/l]',
-            h_cons:'Consum [l/100 km]',
-            h_dist:'Distància [km]',
-            h_indem:'Amortització [€/km]',
-            row_trip:'Amortització',
-            row_fuel:'Costos de combustible',
-            row_total:'Despesa total (anada i tornada)',
-            note:'* Valors segons càlcul (anada i tornada). Distribuït entre alumnes a la taula principal.'
-          },
-          consult:{
-            title:'Suplement de tutoria (1×/trimestre, 15 min inclosa)',
-            steps:[
-              'Base: 20 €/h → 0,333 €/min',
-              'Tutoria: 15 min/trim → 5,00 €',
-              'Repartiment: 5,00 € ÷ 12 setmanes ≈ 0,4167 € → arrodonit: 0,42 € per classe'
-            ],
-            cta:'Reservar tutoria',
-            note:'* El suplement (0,42 € per classe) cobreix una tutoria de 15 min per trimestre. Sessions addicionals: 5 € / 15 min.',
-            th_tip:'Suplement per classe per cobrir 15 min de tutoria per trimestre.'
-          }
-        },
-        es:{
-          title_short:'Listado de precios <em>English Montessori 2.1</em> (Vista resumida)',
-          title_full:'Transparencia total de costos – <em>English Montessori 2.1</em>',
-          doc_title:'Transparencia total de costos – English Montessori 2.1',
-          hint_collapsed:'Aquí puedes ver el listado de precios con la vista resumida',
-          hint_expanded:'Aquí puedes ver el listado de precios y la información detallada de las clases',
-          btn_expand:'Transparencia total',
-          btn_collapse:'Volver a la vista resumida',
-          lang_label:'Idioma:',
-          card1:'Idioma y configuración',
-          keyfacts:'Datos clave',
-          cta:'¿Quieres saber cómo fijamos los precios? → Pulsa «Transparencia total» y consulta el detalle de todos los costes.',
-          rotate_expand:'Gira el móvil para ver mejor la tabla de detalles.',
-          ths:['Alumnos','Precio base/clase por alumno','Costo de material','Tiempo prep. al mes (h)','Tiempo de preparación al día (min.)','Precio de preparación al día','Precio locomoción','Suplemento de tutoría','Precio/Clase por alumno','Al mes - 4x semanas'],
-          tips:{
-            alumnes:'Tamaño del grupo: entre 1 y 5 como máximo',
-            base:'Precio base orientado a clase particular «Only for you»',
-            material:'por alumno y sesión: 1 € en material / mantenimiento',
-            mes:'1 h/mes para el primer alumno, +30 min por cada extra',
-            prepmin:'Cuanto mayor el grupo, mayor preparación',
-            prepdia:'Tarifa de preparación: 12 €/h',
-            preuclasse:'Precio por alumno y clase',
-            mes4:'Precio mensual (4 semanas)',
-            time:'Horario habitual de las clases',
-            classe:'Sesión (~80–90 min) + 10 min de llegada/merienda'
-          },
-          chips:{ alumnes:'Alumnos:', classe:'Duración clase:', time:'Horario:', place:'Ubicación:', family:'Descuento familiar:' },
-          chipvals:{
-            classe:'~90 min',
-            time:'Mediodía: 13:00–14:30<br>Tarde: 16:45–18:15',
-            place:'Escuela Sant Esteve de Guialbes'
-          },
-          payonly:'Sólo se paga por las clases a las que se asiste',
-          payonly_tip:'Pago justo: si no asistes, no pagas.',
-          family_tip:'<em>- 10 € / mes / familia</em>',
-          loco:{
-            title:'Precio locomoción',
-            h_fuel:'Precio del combustible [€/l]',
-            h_cons:'Consumo [l/100 km]',
-            h_dist:'Distancia [km]',
-            h_indem:'Amortización [€/km]',
-            row_trip:'Amortización',
-            row_fuel:'Costes de combustible',
-            row_total:'Gasto total (ida y vuelta)',
-            note:'* Valores según cálculo (ida y vuelta). Repartido entre alumnos en la tabla principal.'
-          },
-          consult:{
-            title:'Suplemento de tutoría (1×/trimestre, 15 min incluido)',
-            steps:[
-              'Base: 20 €/h → 0,333 €/min',
-              'Tutoría: 15 min/trimestre → 5,00 €',
-              'Reparto: 5,00 € ÷ 12 semanas ≈ 0,4167 € → redondeo: 0,42 € por clase'
-            ],
-            cta:'Reservar tutoría',
-            note:'* El suplemento (0,42 € por clase) cubre una tutoría de 15 min por trimestre. Adicionales: 5 € / 15 min.',
-            th_tip:'Suplemento por clase para cubrir 15 min de tutoría por trimestre.'
-          }
-        },
-        en:{
-          title_short:'Price list <em>English Montessori 2.1</em> (Compact view)',
-          title_full:'Full cost transparency – <em>English Montessori 2.1</em>',
-          doc_title:'Full cost transparency – English Montessori 2.1',
-          hint_collapsed:'Here you can see the price list in the compact view',
-          hint_expanded:'Here you can see the price list and detailed class information',
-          btn_expand:'Full transparency',
-          btn_collapse:'Back to compact view',
-          lang_label:'Language:',
-          card1:'Language & settings',
-          keyfacts:'Key facts',
-          cta:'Want to understand our pricing? → Click “Full transparency” to see every cost item.',
-          rotate_expand:'Rotate your phone to better view the details table.',
-          ths:['Students','Base price/class per student','Material cost','Prep time per month (h)','Prep time per day (min.)','Preparation price per day','Travel price','Consultation surcharge','Price/Class per student','Per month - 4x weeks'],
-          tips:{
-            alumnes:'Class size: between 1 and 5 students',
-            base:'Base price references 1:1 lessons “Only for you”',
-            material:'per student & class: €1 for material / maintenance',
-            mes:'1h/month for first student, +30m for each additional',
-            prepmin:'Larger groups need more preparation time',
-            prepdia:'Preparation rate: €12/hour',
-            preuclasse:'Price per student per class',
-            mes4:'Monthly price (4 weeks)',
-            time:'Regular class schedule',
-            classe:'Session (~80–90 min) + 10 min arrival/snack'
-          },
-          chips:{ alumnes:'Students:', classe:'Class length:', time:'Schedule:', place:'Location:', family:'Family discount:' },
-          chipvals:{
-            classe:'~90 min',
-            time:'Midday: 13:00–14:30<br>Evening: 16:45–18:15',
-            place:'Sant Esteve de Guialbes School'
-          },
-          payonly:'You only pay for the classes you attend.',
-          payonly_tip:'Fair billing: no attendance, no charge.',
-          family_tip:'<em>- €10 / month / family</em>',
-          loco:{
-            title:'Travel price',
-            h_fuel:'Fuel price [€/l]',
-            h_cons:'Consumption [l/100 km]',
-            h_dist:'Distance [km]',
-            h_indem:'Depreciation [€/km]',
-            row_trip:'Depreciation',
-            row_fuel:'Fuel costs',
-            row_total:'Total expense (round trip)',
-            note:'* Values per calculation (round trip). Split among students in the main table.'
-          },
-          consult:{
-            title:'Consultation surcharge (1×/trimester, 15 min included)',
-            steps:[
-              'Base: €20/h → €0.333/min',
-              'Consultation: 15 min/trimester → €5.00',
-              'Spread: €5.00 ÷ 12 weeks ≈ €0.4167 → rounded: €0.42 per class'
-            ],
-            cta:'Book consultation',
-            note:'* The €0.42 per-class surcharge covers one 15-min consultation per trimester. Extra: €5 / 15 min.',
-            th_tip:'Per-class surcharge to cover a 15-min consultation per trimester.'
-          }
-        }
-      };
-
-      /* Helpers */
-      function tagColumns(){
-        const headerRow = table.tHead.rows[0];
-        for(let i=0;i<headerRow.children.length;i++){ headerRow.children[i].classList.add('col-'+i); }
-        table.querySelectorAll('tbody tr').forEach(tr=>{
-          for(let i=0;i<tr.children.length;i++){ tr.children[i].classList.add('col-'+i); }
-        });
-      }
-
-      const HIDE_COLS = [1,2,3,4,5,6,7];
-      function setStaggerDelays(expanding){
-        const headerRow = table.tHead.rows[0];
-        const rows = Array.from(table.tBodies[0].rows);
-        HIDE_COLS.forEach((colIndex, idx) => {
-          const order = expanding ? (HIDE_COLS.length - 1 - idx) : idx;
-          const delay = `calc(${order} * var(--stagger-step))`;
-          headerRow.children[colIndex].style.setProperty('--stagger', delay);
-          rows.forEach(tr => tr.children[colIndex].style.setProperty('--stagger', delay));
-        });
-        [0,8,9].forEach(i=>{
-          headerRow.children[i].style.removeProperty('--stagger');
-          rows.forEach(tr => tr.children[i].style.removeProperty('--stagger'));
-        });
-      }
-
-      /* Popup controls */
-      function showPopup(el){
-        if(!isSmallScreen()) { hidePopup(el); return; }
-        document.body.classList.add('no-scroll');
-        el.classList.add('show');
-      }
-      function hidePopup(el){
-        el.classList.remove('show');
-        const anyOpen = Array.from(document.querySelectorAll('.popup')).some(p=>p.classList.contains('show'));
-        if(!anyOpen) document.body.classList.remove('no-scroll');
-      }
-
-      /* WhatsApp helpers */
-      function makeWaHref(lang){
-        const base = `https://wa.me/${WA_PHONE}`;
-        const expanded = !table.classList.contains('collapsed');
-        const context = expanded ? ' (detailed view open)' : ' (compact view)';
-        const msg = (i18n[lang].wa?.prefill || '').trim() + context;
-        return `${base}?text=${encodeURIComponent(msg)}`;
-      }
-      function updateWaFab(lang){
-        waFab.href = makeWaHref(lang);
-        const prompts = {ca:'Tens dubtes? Escriu-nos directament aquí', es:'¿Tienes dudas? Escríbenos directamente aquí', en:'Got questions? Message us right here'};
-        const labels  = {ca:'Escriu-nos per WhatsApp', es:'Escríbenos por WhatsApp', en:'Message us on WhatsApp'};
-        waFab.setAttribute('aria-label', prompts[lang] || 'Contact us on WhatsApp');
-        waFab.setAttribute('title', prompts[lang] || 'Contact us on WhatsApp');
-        waFabLabel.textContent = labels[lang] || 'WhatsApp';
-      }
-
-      /* Ansicht umschalten */
-      function setColumnsVisibility(expanded){
-        setStaggerDelays(expanded);
-        tableCard.classList.remove('opening','closing');
-
-        // collapsed CTA unter Tabelle zeigen/verstecken
-        const consultCollapsed = document.getElementById('consult-collapsed');
-
-        if(expanded){
-          tableCard.classList.add('opening');
-          table.classList.remove('collapsed');
-          h1.innerHTML = i18n[langSel.value].title_full;
-          hint.innerHTML = i18n[langSel.value].hint_expanded;
-          btn.textContent = i18n[langSel.value].btn_collapse;
-          belowSection.classList.remove('is-hidden');
-          consultCollapsed.classList.add('is-hidden');
-          if(userInteracted){
-            document.getElementById('popup-rotate-text').textContent = i18n[langSel.value].rotate_expand;
-            showPopup(popupRotate);
-          }
-        }else{
-          tableCard.classList.add('closing');
-          table.classList.add('collapsed');
-          h1.innerHTML = i18n[langSel.value].title_short;
-          hint.innerHTML = i18n[langSel.value].hint_collapsed;
-          btn.textContent = i18n[langSel.value].btn_expand;
-          belowSection.classList.add('is-hidden');
-          consultCollapsed.classList.remove('is-hidden');
-          hidePopup(popupRotate);
-        }
-        updateWaFab(langSel.value);
-        setTimeout(()=>tableCard.classList.remove('opening','closing'), 820);
-      }
-
-      /* Sprache anwenden */
-      function applyLanguage(lang){
-        const expanded = !table.classList.contains('collapsed');
-
-        h1.innerHTML = expanded ? i18n[lang].title_full : i18n[lang].title_short;
-        hint.innerHTML = expanded ? i18n[lang].hint_expanded : i18n[lang].hint_collapsed;
-        ctaLine.textContent = i18n[lang].cta;
-        langLabel.textContent = i18n[lang].lang_label;
-        document.title = i18n[lang].doc_title;
-        btn.textContent = expanded ? i18n[lang].btn_collapse : i18n[lang].btn_expand;
-
-        // Karten-Titel
-        card1Title.textContent = i18n[lang].card1;
-        card2Title.textContent = i18n[lang].keyfacts;
-
-        // Header-Labels (mit getauschtem Loco/Consult)
-        const thIds = ['th-alumnes','th-preu-base','th-material','th-mes','th-prep-min','th-prep-dia','th-loco','th-consult','th-preu-classe','th-mes4'];
-        thIds.forEach((id, idx)=>{
-          const th = document.getElementById(id);
-          const labelSpan = th.querySelector(':scope > span[data-i18n], :scope > span:not(.tip-bubble)');
-          if(labelSpan) {
-            if(id==='th-consult'){
-              document.getElementById('th-consult-label').textContent = i18n[lang].ths[idx];
-            }else{
-              labelSpan.textContent = i18n[lang].ths[idx];
-            }
-          }
-        });
-
-        // Header-Tipps
-        const tipMap = { 'tip_alumnes':'alumnes','tip_base':'base','tip_material':'material','tip_mes':'mes','tip_prepmin':'prepmin','tip_prepdia':'prepdia','tip_preuclasse':'preuclasse','tip_mes4':'mes4' };
-        Object.entries(tipMap).forEach(([dataKey, k])=>{
-          const el = document.querySelector(`[data-i18n="${dataKey}"]`);
-          if(el && i18n[lang].tips[k]) el.textContent = i18n[lang].tips[k];
-        });
-        // Consult tip
-        document.getElementById('tip_consult').textContent = i18n[lang].consult.th_tip;
-
-        // Key-Facts Chips labels
-        const map = { 'chip_alumnes_label':'alumnes','chip_class_label':'classe','chip_time_label':'time','chip_place_label':'place','chip_family_label':'family' };
-        Object.entries(map).forEach(([key,k])=>{
-          const el = document.querySelector(`[data-i18n="${key}"]`);
-          if(el) el.textContent = i18n[lang].chips[k];
-        });
-        document.getElementById('chip-class-val').innerHTML = i18n[lang].chipvals.classe;
-        document.getElementById('chip-time-val').innerHTML  = i18n[lang].chipvals.time;
-        document.getElementById('chip-place-val').innerHTML = i18n[lang].chipvals.place;
-        document.getElementById('tip-chip-family').innerHTML = i18n[lang].family_tip;
-
-        // Tooltips für Chips
-        document.getElementById('tip-chip-alumnes').textContent = i18n[lang].tips.alumnes;
-        document.getElementById('tip-chip-class').textContent   = i18n[lang].tips.classe;
-        document.getElementById('tip-chip-time').textContent    = i18n[lang].tips.time;
-        document.getElementById('tip-chip-place').innerHTML     = (lang==='en'?'Open in Google Maps':(lang==='es'?'Abrir en Google Maps':'Obrir a Google Maps'));
-
-        // Pay-only Hinweis + Tooltip
-        document.getElementById('chip-payonly').textContent     = i18n[lang].payonly;
-        document.getElementById('chip-payonly-tip').textContent = i18n[lang].payonly_tip;
-
-        // Locobox i18n
-        const L = i18n[lang].loco;
-        document.getElementById('loco-title').textContent = L.title;
-        document.getElementById('loco-h-fuel').childNodes[0].nodeValue = L.h_fuel + ' ';
-        document.getElementById('loco-h-cons').innerHTML = L.h_cons + ' <a class="src" href="https://www.autokostencheck.de/Smart/Smart/Smart-Fortwo/smart-fortwo-1-0-coupe_31830/verbrauch/?utm_source=chatgpt.com" target="_blank" rel="noopener">font</a>';
-        document.getElementById('loco-h-dist').childNodes[0].nodeValue = L.h_dist + ' ';
-        document.getElementById('loco-h-indem').textContent = L.h_indem;
-        document.getElementById('loco-row-trip').textContent = L.row_trip;
-        document.getElementById('loco-row-fuel').textContent = L.row_fuel;
-        document.getElementById('loco-row-total').textContent = L.row_total;
-        document.getElementById('loco-note').textContent = L.note;
-
-        // Tutoria (Consult) i18n – statische Erklärung + CTA (Detailbereich)
-        const C = i18n[lang].consult;
-        document.getElementById('consult-title').textContent = C.title;
-
-        const stepsEl = document.getElementById('consult-steps');
-        stepsEl.innerHTML = '';
-        (C.steps||[]).forEach(s=>{
-          const li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li);
-        });
-        document.getElementById('consult-cta').textContent = C.cta;
-        document.getElementById('consult-note').textContent = C.note;
-
-        // Tutoria (Consult) i18n – COLLAPSED Box (ohne Rechenliste)
-        document.getElementById('consult-title-collapsed').textContent = C.title;
-        document.getElementById('consult-steps-collapsed').innerHTML = '';
-        document.getElementById('consult-cta-collapsed').textContent = C.cta;
-        document.getElementById('consult-note-collapsed').textContent = 'La classe inclou una tutoría de 15 min por trimestre. Adicionales: 5 € / 15 min.';
-      }
-
-      /* Initialsprache per Browser erkennen */
-      function detectInitialLang(){
-        const n = (navigator.language || navigator.userLanguage || '').toLowerCase();
-        if(n.startsWith('es')) return 'es';
-        if(n.startsWith('en')) return 'en';
-        return 'ca';
-      }
-
-      /* Init */
-      (function init(){
-        tagColumns();
-        table.classList.add('collapsed');     // Start collapsed
-        const initialLang = detectInitialLang();
-        langSel.value = initialLang;
-        applyLanguage(initialLang);
-        tableCard.classList.add('opening');
-        setTimeout(()=>tableCard.classList.remove('opening'), 820);
-
-        // beim Start im collapsed state: die collapsed-Consultbox sichtbar lassen
-        document.getElementById('consult-collapsed').classList.remove('is-hidden');
-
-        // Close-Button für Popup aktivieren
-        document.querySelectorAll('.popup .close').forEach(btn=>{
-          btn.addEventListener('click', ()=>{ hidePopup(popupRotate); });
-        });
-      })();
-
-      /* Events */
-      btn.addEventListener('click', ()=>{
-        userInteracted = true;
-        const expanded = !table.classList.contains('collapsed');
-        setColumnsVisibility(!expanded);
-      });
-      langSel.addEventListener('change', ()=> { applyLanguage(langSel.value); });
-
-      window.addEventListener('resize', ()=>{
-        if(!isSmallScreen()){
-          const pr = document.getElementById('popup-rotate');
-          if(pr) pr.classList.remove('show');
-          document.body.classList.remove('no-scroll');
-        }
-      });
-    })();
-  </script>
-</body>
-</html>
+<script>
+ (function(){
+ const table = document.getElementById('cost-table');
+ const tableCard = document.getElementById('table-card');
+ const btn = document.getElementById('toggle-columns-btn');
+ const h1 = document.getElementById('main-title');
+ const hint = document.getElementById('hint');
+ const card1Title= document.getElementById('card1-title');
+ const card2Title= document.getElementById('card2-title');
+ 
+ const langSel = document.getElementById('lang-select');
+ const langLabel = document.getElementById('lang-label');
+ const ctaLine = document.getElementById('cta-line');
+ 
+ const popupRotate = document.getElementById('popup-rotate');
+ 
+ const belowSection = document.getElementById('below-section');
+ 
+ /* WhatsApp FAB refs */
+ const WA_PHONE = '34662222407';
+ const waFab = document.getElementById('wa-fab');
+ const waFabLabel = document.getElementById('wa-fab-label');
+ 
+ const isSmallScreen = () => window.matchMedia('(max-width: 767.98px)').matches;
+ let userInteracted = false;
+ 
+ const i18n = {
+ ca:{
+ title_short:'Llistat de preus <em>English Montessori 2.1</em> (Vista resumida)',
+ title_full:'Vista ampliada dels preus – <em>English Montessori 2.1</em>',
+ doc_title:'Vista ampliada dels preus – English Montessori 2.1',
+ hint_collapsed:'Aquí podeu veure el llistat de preus amb la vista resumida',
+ hint_expanded:'Aquí podeu veure el llistat de preus i la informació detallada de les classes',
+ btn_expand:'Transparència total',
+ btn_collapse:'Tornar a la vista resumida',
+ lang_label:'Llengua:',
+ card1:'Llengua i configuració',
+ keyfacts:'Dades clau',
+ cta:'Vols saber com fixem els preus? → Prem «Transparència total» i veu el detall de tots els costos.',
+ rotate_expand:'Gira el mòbil per veure millor la taula de detalls.',
+ ths:['Alumnes','Preu base/classe per alumne','Cost de material','Temps prep. al mes (hores)','Temps de preparació al dia (min.)','Preu de preparació al dia','Preu locomoció','Suplement de tutoria','Preu/Classe per alumnes','Al mes - 4x setmanes'],
+ tips:{
+ alumnes:'Mida del grup: entre 1 i 5 alumnes com a màxim',
+ base:'Preu base orientat a classe particular «Only for you»',
+ material:'per alumne i sessió: 1 € en material / manteniment',
+ mes:'1 h de prep. al mes pel primer alumne, +30 min per cadascun extra',
+ prepmin:'Com més gran el grup, més temps de preparació',
+ prepdia:'Tarifa de preparació: 12 €/h',
+ preuclasse:'Preu per alumne i classe',
+ mes4:'Preu mensual (4 setmanes)',
+ time:'Horari habitual de les classes',
+ classe:'Sessió (~80–90 min) + 10 min d’arribada/berenar'
+ },
+ chips:{ alumnes:'Alumnes:', classe:'Durada classe:', time:'Horari:', place:'Ubicació:' },
+ chipvals:{
+ classe:'~90 min',
+ time:'Migdia: 13:00–14:30<br>Vespre: 16:45–18:15',
+ place:'Escola Sant Esteve de Guialbes'
+ },
+ payonly:'Es paga només per les classes a les quals s’assisteix',
+ payonly_tip:'Pagament just: sense assistència, sense cost.',
+ loco:{
+ title:'Preu locomoció',
+ h_fuel:'Preu del combustible [€/l]',
+ h_cons:'Consum [l/100 km]',
+ h_dist:'Distància [km]',
+ h_indem:'Amortització [€/km]',
+ row_trip:'Amortització',
+ row_fuel:'Costos de combustible',
+ row_total:'Despesa total (anada i tornada)',
+ note:'* Valors segons càlcul (anada i tornada). Distribuït entre alumnes a la taula principal.'
+ },
+ consult:{
+ title:'Suplement de tutoria (1×/trimestre, 15 min inclosa)',
+ steps:[
+ 'Base: 20 €/h → 0,333 €/min',
+ 'Tutoria: 15 min/trim → 5,00 €',
+ 'Repartiment: 5,00 € ÷ 12 setmanes ≈ 0,4167 € → arrodonit: 0,42 € per classe'
+ ],
+ cta:'Reservar tutoria',
+ note:'* El suplement (0,42 € per classe) cobreix una tutoria de 15 min per trimestre. Sessions addicionals: 5 € / 15 min.',
+ th_tip:'Suplement per classe per cobrir 15 min de tutoria per trimestre.'
+ }
+ },
+ es:{
+ title_short:'Listado de precios <em>English Montessori 2.1</em> (Vista resumida)',
+ title_full:'Transparencia total de costos – <em>English Montessori 2.1</em>',
+ doc_title:'Transparencia total de costos – English Montessori 2.1',
+ hint_collapsed:'Aquí puedes ver el listado de precios con la vista resumida',
+ hint_expanded:'Aquí puedes ver el listado de precios y la información detallada de las clases',
+ btn_expand:'Transparencia total',
+ btn_collapse:'Volver a la vista resumida',
+ lang_label:'Idioma:',
+ card1:'Idioma y configuración',
+ keyfacts:'Datos clave',
+ cta:'¿Quieres saber cómo fijamos los precios? → Pulsa «Transparencia total» y consulta el detalle de todos los costes.',
+ rotate_expand:'Gira el móvil para ver mejor la tabla de detalles.',
+ ths:['Alumnos','Precio base/clase por alumno','Costo de material','Tiempo prep. al mes (h)','Tiempo de preparación al día (min.)','Precio de preparación al día','Precio locomoción','Suplemento de tutoría','Precio/Clase por alumno','Al mes - 4x semanas'],
+ tips:{
+ alumnes:'Tamaño del grupo: entre 1 y 5 como máximo',
+ base:'Precio base orientado a clase particular «Only for you»',
+ material:'por alumno y sesión: 1 € en material / mantenimiento',
+ mes:'1 h/mes para el primer alumno, +30 min por cada extra',
+ prepmin:'Cuanto mayor el grupo, mayor preparación',
+ prepdia:'Tarifa de preparación: 12 €/h',
+ preuclasse:'Precio por alumno y clase',
+ mes4:'Precio mensual (4 semanas)',
+ time:'Horario habitual de las clases',
+ classe:'Sesión (~80–90 min) + 10 min de llegada/merienda'
+ },
+ chips:{ alumnes:'Alumnos:', classe:'Duración clase:', time:'Horario:', place:'Ubicación:' },
+ chipvals:{
+ classe:'~90 min',
+ time:'Mediodía: 13:00–14:30<br>Tarde: 16:45–18:15',
+ place:'Escuela Sant Esteve de Guialbes'
+ },
+ payonly:'Sólo se paga por las clases a las que se asiste',
+ payonly_tip:'Pago justo: si no asistes, no pagas.',
+ loco:{
+ title:'Precio locomoción',
+ h_fuel:'Precio del combustible [€/l]',
+ h_cons:'Consumo [l/100 km]',
+ h_dist:'Distancia [km]',
+ h_indem:'Amortización [€/km]',
+ row_trip:'Amortización',
+ row_fuel:'Costes de combustible',
+ row_total:'Gasto total (ida y vuelta)',
+ note:'* Valores según cálculo (ida y vuelta). Repartido entre alumnos en la tabla principal.'
+ },
+ consult:{
+ title:'Suplemento de tutoría (1×/trimestre, 15 min incluido)',
+ steps:[
+ 'Base: 20 €/h → 0,333 €/min',
+ 'Tutoría: 15 min/trimestre → 5,00 €',
+ 'Reparto: 5,00 € ÷ 12 semanas ≈ 0,4167 € → redondeo: 0,42 € por clase'
+ ],
+ cta:'Reservar tutoría',
+ note:'* El suplemento (0,42 € por clase) cubre una tutoría de 15 min por trimestre. Adicionales: 5 € / 15 min.',
+ th_tip:'Suplemento por clase para cubrir 15 min de tutoría por trimestre.'
+ }
+ },
+ en:{
+ title_short:'Price list <em>English Montessori 2.1</em> (Compact view)',
+ title_full:'Full cost transparency – <em>English Montessori 2.1</em>',
+ doc_title:'Full cost transparency – English Montessori 2.1',
+ hint_collapsed:'Here you can see the price list in the compact view',
+ hint_expanded:'Here you can see the price list and detailed class information',
+ btn_expand:'Full transparency',
+ btn_collapse:'Back to compact view',
+ lang_label:'Language:',
+ card1:'Language & settings',
+ keyfacts:'Key facts',
+ cta:'Want to understand our pricing? → Click “Full transparency” to see every cost item.',
+ rotate_expand:'Rotate your phone to better view the details table.',
+ ths:['Students','Base price/class per student','Material cost','Prep time per month (h)','Prep time per day (min.)','Preparation price per day','Travel price','Consultation surcharge','Price/Class per student','Per month - 4x weeks'],
+ tips:{
+ alumnes:'Class size: between 1 and 5 students',
+ base:'Base price references 1:1 lessons “Only for you”',
+ material:'per student & class: €1 for material / maintenance',
+ mes:'1h/month for first student, +30m for each additional',
+ prepmin:'Larger groups need more preparation time',
+ prepdia:'Preparation rate: €12/hour',
+ preuclasse:'Price per student per class',
+ mes4:'Monthly price (4 weeks)',
+ time:'Regular class schedule',
+ classe:'Session (~80–90 min) + 10 min arrival/snack'
+ },
+ chips:{ alumnes:'Students:', classe:'Class length:', time:'Schedule:', place:'Location:' },
+ chipvals:{
+ classe:'~90 min',
+ time:'Midday: 13:00–14:30<br>Evening: 16:45–18:15',
+ place:'Sant Esteve de Guialbes School'
+ },
+ payonly:'You only pay for the classes you attend.',
+ payonly_tip:'Fair billing: no attendance, no charge.',
+ loco:{
+ title:'Travel price',
+ h_fuel:'Fuel price [€/l]',
+ h_cons:'Consumption [l/100 km]',
+ h_dist:'Distance [km]',
+ h_indem:'Depreciation [€/km]',
+ row_trip:'Depreciation',
+ row_fuel:'Fuel costs',
+ row_total:'Total expense (round trip)',
+ note:'* Values per calculation (round trip). Split among students in the main table.'
+ },
+ consult:{
+ title:'Consultation surcharge (1×/trimester, 15 min included)',
+ steps:[
+ 'Base: €20/h → €0.333/min',
+ 'Consultation: 15 min/trimester → €5.00',
+ 'Spread: €5.00 ÷ 12 weeks ≈ €0.4167 → rounded: €0.42 per class'
+ ],
+ cta:'Book consultation',
+ note:'* The €0.42 per-class surcharge covers one 15-min consultation per trimester. Extra: €5 / 15 min.',
+ th_tip:'Per-class surcharge to cover a 15-min consultation per trimester.'
+ }
+ }
+ };
+ 
+ /* Helpers */
+ function tagColumns(){
+ const headerRow = table.tHead.rows[0];
+ for(let i=0;i<headerRow.children.length;i++){ headerRow.children[i].classList.add('col-'+i); }
+ table.querySelectorAll('tbody tr').forEach(tr=>{
+ for(let i=0;i<tr.children.length;i++){ tr.children[i].classList.add('col-'+i); }
+ });
+ }
+ 
+ const HIDE_COLS = [1,2,3,4,5,6,7];
+ function setStaggerDelays(expanding){
+ const headerRow = table.tHead.rows[0];
+ const rows = Array.from(table.tBodies[0].rows);
+ HIDE_COLS.forEach((colIndex, idx) => {
+ const order = expanding ? (HIDE_COLS.length - 1 - idx) : idx;
+ const delay = `calc(${order} * var(--stagger-step))`;
+ headerRow.children[colIndex].style.setProperty('--stagger', delay);
+ rows.forEach(tr => tr.children[colIndex].style.setProperty('--stagger', delay));
+ });
+ [0,8,9].forEach(i=>{
+ headerRow.children[i].style.removeProperty('--stagger');
+ rows.forEach(tr => tr.children[i].style.removeProperty('--stagger'));
+ });
+ }
+ 
+ /* Popup controls */
+ function showPopup(el){
+ if(!isSmallScreen()) { hidePopup(el); return; }
+ document.body.classList.add('no-scroll');
+ el.classList.add('show');
+ }
+ function hidePopup(el){
+ el.classList.remove('show');
+ const anyOpen = Array.from(document.querySelectorAll('.popup')).some(p=>p.classList.contains('show'));
+ if(!anyOpen) document.body.classList.remove('no-scroll');
+ }
+ 
+ /* WhatsApp helpers */
+ function makeWaHref(lang){
+ const base = `https://wa.me/${WA_PHONE}`;
+ const expanded = !table.classList.contains('collapsed');
+ const context = expanded ? ' (detailed view open)' : ' (compact view)';
+ const msg = (i18n[lang].wa?.prefill || '').trim() + context;
+ return `${base}?text=${encodeURIComponent(msg)}`;
+ }
+ function updateWaFab(lang){
+ waFab.href = makeWaHref(lang);
+ const prompts = {ca:'Tens dubtes? Escriu-nos directament aquí', es:'¿Tienes dudas? Escríbenos directamente aquí', en:'Got questions? Message us right here'};
+ const labels = {ca:'Escriu-nos per WhatsApp', es:'Escríbenos por WhatsApp', en:'Message us on WhatsApp'};
+ waFab.setAttribute('aria-label', prompts[lang] || 'Contact us on WhatsApp');
+ waFab.setAttribute('title', prompts[lang] || 'Contact us on WhatsApp');
+ waFabLabel.textContent = labels[lang] || 'WhatsApp';
+ }
+ 
+ /* Ansicht umschalten */
+ function setColumnsVisibility(expanded){
+ setStaggerDelays(expanded);
+ tableCard.classList.remove('opening','closing');
+ 
+ // collapsed CTA unter Tabelle zeigen/verstecken
+ const consultCollapsed = document.getElementById('consult-collapsed');
+ 
+ if(expanded){
+ tableCard.classList.add('opening');
+ table.classList.remove('collapsed');
+ h1.innerHTML = i18n[langSel.value].title_full;
+ hint.innerHTML = i18n[langSel.value].hint_expanded;
+ btn.textContent = i18n[langSel.value].btn_collapse;
+ belowSection.classList.remove('is-hidden');
+ consultCollapsed.classList.add('is-hidden');
+ if(userInteracted){
+ document.getElementById('popup-rotate-text').textContent = i18n[langSel.value].rotate_expand;
+ showPopup(popupRotate);
+ }
+ }else{
+ tableCard.classList.add('closing');
+ table.classList.add('collapsed');
+ h1.innerHTML = i18n[langSel.value].title_short;
+ hint.innerHTML = i18n[langSel.value].hint_collapsed;
+ btn.textContent = i18n[langSel.value].btn_expand;
+ belowSection.classList.add('is-hidden');
+ consultCollapsed.classList.remove('is-hidden');
+ hidePopup(popupRotate);
+ }
+ updateWaFab(langSel.value);
+ setTimeout(()=>tableCard.classList.remove('opening','closing'), 820);
+ }
+ 
+ /* Sprache anwenden */
+ function applyLanguage(lang){
+ const expanded = !table.classList.contains('collapsed');
+ 
+ h1.innerHTML = expanded ? i18n[lang].title_full : i18n[lang].title_short;
+ hint.innerHTML = expanded ? i18n[lang].hint_expanded : i18n[lang].hint_collapsed;
+ ctaLine.textContent = i18n[lang].cta;
+ langLabel.textContent = i18n[lang].lang_label;
+ document.title = i18n[lang].doc_title;
+ btn.textContent = expanded ? i18n[lang].btn_collapse : i18n[lang].btn_expand;
+ 
+ // Karten-Titel
+ card1Title.textContent = i18n[lang].card1;
+ card2Title.textContent = i18n[lang].keyfacts;
+ 
+ // Header-Labels (mit getauschtem Loco/Consult)
+ const thIds = ['th-alumnes','th-preu-base','th-material','th-mes','th-prep-min','th-prep-dia','th-loco','th-consult','th-preu-classe','th-mes4'];
+ thIds.forEach((id, idx)=>{
+ const th = document.getElementById(id);
+ const labelSpan = th.querySelector(':scope > span[data-i18n], :scope > span:not(.tip-bubble)');
+ if(labelSpan) {
+ if(id==='th-consult'){
+ document.getElementById('th-consult-label').textContent = i18n[lang].ths[idx];
+ }else{
+ labelSpan.textContent = i18n[lang].ths[idx];
+ }
+ }
+ });
+ 
+ // Header-Tipps
+ const tipMap = { 'tip_alumnes':'alumnes','tip_base':'base','tip_material':'material','tip_mes':'mes','tip_prepmin':'prepmin','tip_prepdia':'prepdia','tip_preuclasse':'preuclasse','tip_mes4':'mes4' };
+ Object.entries(tipMap).forEach(([dataKey, k])=>{
+ const el = document.querySelector(`[data-i18n="${dataKey}"]`);
+ if(el && i18n[lang].tips[k]) el.textContent = i18n[lang].tips[k];
+ });
+ // Consult tip
+ document.getElementById('tip_consult').textContent = i18n[lang].consult.th_tip;
+ 
+ // Key-Facts Chips labels
+ const map = { 'chip_alumnes_label':'alumnes','chip_class_label':'classe','chip_time_label':'time','chip_place_label':'place' };
+ Object.entries(map).forEach(([key,k])=>{
+ const el = document.querySelector(`[data-i18n="${key}"]`);
+ if(el) el.textContent = i18n[lang].chips[k];
+ });
+ document.getElementById('chip-class-val').innerHTML = i18n[lang].chipvals.classe;
+ document.getElementById('chip-time-val').innerHTML = i18n[lang].chipvals.time;
+ document.getElementById('chip-place-val').innerHTML = i18n[lang].chipvals.place;
+ 
+ // Tooltips für Chips
+ document.getElementById('tip-chip-alumnes').textContent = i18n[lang].tips.alumnes;
+ document.getElementById('tip-chip-class').textContent = i18n[lang].tips.classe;
+ document.getElementById('tip-chip-time').textContent = i18n[lang].tips.time;
+ document.getElementById('tip-chip-place').innerHTML = (lang==='en'?'Open in Google Maps':(lang==='es'?'Abrir en Google Maps':'Obrir a Google Maps'));
+ 
+ // Pay-only Hinweis + Tooltip
+ document.getElementById('chip-payonly').textContent = i18n[lang].payonly;
+ document.getElementById('chip-payonly-tip').textContent = i18n[lang].payonly_tip;
+ 
+ // Locobox i18n
+ const L = i18n[lang].loco;
+ document.getElementById('loco-title').textContent = L.title;
+ document.getElementById('loco-h-fuel').childNodes[0].nodeValue = L.h_fuel + ' ';
+ document.getElementById('loco-h-cons').innerHTML = L.h_cons + ' <a class="src" href="https://www.autokostencheck.de/Smart/Smart/Smart-Fortwo/smart-fortwo-1-0-coupe_31830/verbrauch/?utm_source=chatgpt.com" target="_blank" rel="noopener">font</a>';
+ document.getElementById('loco-h-dist').childNodes[0].nodeValue = L.h_dist + ' ';
+ document.getElementById('loco-h-indem').textContent = L.h_indem;
+ document.getElementById('loco-row-trip').textContent = L.row_trip;
+ document.getElementById('loco-row-fuel').textContent = L.row_fuel;
+ document.getElementById('loco-row-total').textContent = L.row_total;
+ document.getElementById('loco-note').textContent = L.note;
+ 
+ // Tutoria (Consult) i18n – statische Erklärung + CTA (Detailbereich)
+ const C = i18n[lang].consult;
+ document.getElementById('consult-title').textContent = C.title;
+ 
+ const stepsEl = document.getElementById('consult-steps');
+ stepsEl.innerHTML = '';
+ (C.steps||[]).forEach(s=>{
+ const li = document.createElement('li'); li.textContent = s; stepsEl.appendChild(li);
+ });
+ document.getElementById('consult-cta').textContent = C.cta;
+ document.getElementById('consult-note').textContent = C.note;
+ 
+ // Tutoria (Consult) i18n – COLLAPSED Box (ohne Rechenliste)
+ document.getElementById('consult-title-collapsed').textContent = C.title;
+ document.getElementById('consult-steps-collapsed').innerHTML = '';
+ document.getElementById('consult-cta-collapsed').textContent = C.cta;
+ document.getElementById('consult-note-collapsed').textContent = 'La classe inclou una tutoría de 15 min por trimestre. Adicionales: 5 € / 15 min.';
+ }
+ 
+ /* Initialsprache per Browser erkennen */
+ function detectInitialLang(){
+ const n = (navigator.language || navigator.userLanguage || '').toLowerCase();
+ if(n.startsWith('es')) return 'es';
+ if(n.startsWith('en')) return 'en';
+ return 'ca';
+ }
+ 
+ /* Init */
+ (function init(){
+ tagColumns();
+ table.classList.add('collapsed'); // Start collapsed
+ const initialLang = detectInitialLang();
+ langSel.value = initialLang;
+ applyLanguage(initialLang);
+ tableCard.classList.add('opening');
+ setTimeout(()=>tableCard.classList.remove('opening'), 820);
+ 
+ // beim Start im collapsed state: die collapsed-Consultbox sichtbar lassen
+ document.getElementById('consult-collapsed').classList.remove('is-hidden');
+ 
+ // Close-Button für Popup aktivieren
+ document.querySelectorAll('.popup .close').forEach(btn=>{
+ btn.addEventListener('click', ()=>{ hidePopup(popupRotate); });
+ });
+ })();
+ 
+ /* Events */
+ btn.addEventListener('click', ()=>{
+ userInteracted = true;
+ const expanded = !table.classList.contains('collapsed');
+ setColumnsVisibility(!expanded);
+ });
+ langSel.addEventListener('change', ()=> { applyLanguage(langSel.value); });
+ 
+ window.addEventListener('resize', ()=>{
+ if(!isSmallScreen()){
+ const pr = document.getElementById('popup-rotate');
+ if(pr) pr.classList.remove('show');
+ document.body.classList.remove('no-scroll');
+ }
+ });
+ })();
+ </script> </body>
+ </html>
